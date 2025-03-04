@@ -1,0 +1,23 @@
+import DatabaseError from "./../exception/DatabaseError.js"
+import ValidationError from "./../exception/ValidationError.js"
+import responseApi from "./../utils/responseApi.js"
+
+const errorHandler = (err, req, res, next) => {
+  if (err instanceof ValidationError) {
+    if(err.responseType === 'html') {
+      return responseApi.html(res, err.html)
+    }
+    return responseApi.badRequest(res, err.message)
+  }
+
+  if(err instanceof DatabaseError) {
+    if(err.responseType === 'html') {
+      return responseApi.html(res, err.html, err.responseCode)
+    }
+    return responseApi.error(res, err.message, err.responseCode)
+  }
+
+  return responseApi.serverError(res, err)
+}
+
+export default errorHandler

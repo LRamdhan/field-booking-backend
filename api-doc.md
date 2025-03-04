@@ -17,7 +17,7 @@ Request Body :
   "name": "Ramdhan",
   "city": "Wado",
   "district": "Malangbong",
-  "subdistrict": "Cisarua",
+  "sub_district": "Cisarua",
   "email": "dhan@yahoo.com",
   "password": "secret",
 }
@@ -39,6 +39,39 @@ Response Error :
   "message": "Registrasi gagal",
   "data": {}
 }
+```
+
+## Confirm Email
+Role : CUSTOMER
+
+Enpoint : GET /api/users/email/confirm
+
+Params :
+- key
+
+Response Success
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  ...
+  Konfirmasi Berhasil, Anda bisa langsung login, atau kembali ke halaman sebelunya
+  ...
+```
+
+Response Error
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  ...
+  Konfirmasi Gagal, Anda telah melebihi batas waktu yang diberikan, 
+  silahkan lakukan registrasi kembali
+  ...
 ```
 
 

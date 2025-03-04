@@ -1,16 +1,15 @@
-import bcrypt from 'bcrypt'
 import connectMongoDb from './config/mongodb.js'
 import { connectRedis } from './config/redisConfig.js'
+import app from './config/expressConfig.js'
 
-// const pass = 'lohkobisa'
-// const WrongPass = 'beda'
+// connect mongodb
+await connectMongoDb()
 
-// const hashPass = await bcrypt.hash(pass, 10)
+// connect redis
+await connectRedis()
 
-// const result = await bcrypt.compare(WrongPass, hashPass)
+// start server
+const PORT = 1122
+app.listen(PORT, () => console.log('Express runs on locahost:' + PORT))
 
-// console.log(result);
 
-// await connectMongoDb()
-
-// await connectRedis()

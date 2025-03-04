@@ -5,6 +5,7 @@ import process from 'process'
 import refreshTokenRepository from "./../model/redis/refreshTokenRepository.js";
 import tokenRepository from "./../model/redis/tokenRepository.js";
 import { connectRedis } from "./../config/redisConfig.js";
+import bcrypt from 'bcrypt'
 
 const createUsers = async () => {
   await User.create([
@@ -13,18 +14,20 @@ const createUsers = async () => {
       city: 'Sumedang',
       district: 'Cisitu',
       sub_district: 'Situmekar',
+      img_url: "https://avatar.iran.liara.run/public/29",
       role: ROLES.CUSTOMER,
       email: 'luji@gmail.com',
-      password: 'satudua12',
+      password: await bcrypt.hash('satudua12', 12),
     },
     {
       name: 'Ujang Kurniawan',
       city: 'Bandung',
       district: 'Cisaraten',
       sub_district: 'Gunung Kidul',
+      img_url: "https://avatar.iran.liara.run/public/32",
       role: ROLES.CUSTOMER,
       email: 'kurniawan@gmail.com',
-      password: 'empatlima45',
+      password: await bcrypt.hash('empatlima45', 12),
     },
   ])
 }
