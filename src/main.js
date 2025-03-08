@@ -10,6 +10,6 @@ await connectRedis()
 
 // start server
 const PORT = 1122
-app.listen(PORT, () => console.log('Express runs on locahost:' + PORT))
+app.listen(PORT, () => console.log('Express runs on localhost:' + PORT))
 
 
