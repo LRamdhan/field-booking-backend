@@ -1,6 +1,6 @@
 import connectMongoDb from './config/mongodb.js'
 import { connectRedis } from './config/redisConfig.js'
-import app from './config/expressConfig.js'
+import { app } from './config/expressConfig.js'
 
 // connect mongodb
 await connectMongoDb()

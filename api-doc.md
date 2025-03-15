@@ -75,6 +75,15 @@ Response Error
 ```
 
 
+## Login Google
+
+Role : CUSTOMER | ADMIN
+
+Enpoint : GET /api/users/login/google
+
+Response : Redirect to dashboard or certain page
+
+
 ## Login
 
 Role : CUSTOMER | ADMIN
@@ -137,6 +146,39 @@ Response Error :
 {
   "success": false,
   "message": "Logout gagal",
+  "data": {}
+}
+```
+
+## Refresh Token
+
+Role : CUSTOMER | ADMIN
+
+Enpoint : POST /api/users/refresh-token
+
+Request Body : 
+
+```json
+{
+  "refresh_token": "loremipsumdoloramet"
+}
+```
+Response Success :
+```json
+{
+  "success": true,
+  "message": "Success",
+  "data": {
+    "access_token": "loremipsumdoloramet"
+  }
+}
+```
+
+Response Error : 
+```json
+{
+  "success": false,
+  "message": "Fail",
   "data": {}
 }
 ```

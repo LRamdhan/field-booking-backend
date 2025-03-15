@@ -14,4 +14,10 @@ function generateRefreshToken(email) {
   });
 }
 
-export { generateToken, generateRefreshToken }
+function verifyToken(token) {
+  return jwt.verify(token, JWT_ACCESS_TOKEN_SECRET, {
+    algorithms: ['HS384']
+  });
+}
+
+export { generateToken, generateRefreshToken, verifyToken }

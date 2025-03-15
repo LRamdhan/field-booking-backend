@@ -2,11 +2,17 @@ import { Repository, Schema } from 'redis-om'
 import { redisClient } from './../../config/redisConfig.js'
 
 const refreshTokenSchema = new Schema('refresh_token', {
+  id: {
+    type: 'string'
+  },
   user_id: {
-    type: 'text'
+    type: 'string'
+  },
+  access_token_id: {
+    type: 'string'
   },
   refresh_token: {
-    type: 'text'
+    type: 'string'
   }
 })
 

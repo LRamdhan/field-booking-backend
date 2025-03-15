@@ -17,6 +17,45 @@ import { generateRefreshToken, generateToken } from "../utils/jwtHelper.js"
 import tokenRepository from "../model/redis/tokenRepository.js"
 import { EntityId } from 'redis-om'
 import refreshTokenRepository from "../model/redis/refreshTokenRepository.js"
+import ConnectedWsUserRepository from "../model/redis/ConnectedWsUserRepository.js"
+import { wsServer } from "../config/expressConfig.js"
+import { getDeviceInfo } from "./../utils/userAgentHelper.js"
+import jwt from 'jsonwebtoken'
+
+const createSession = async (user, req) => {
+  const accessToken = generateToken(user.email)
+  const refreshToken = generateRefreshToken(user.email)
+  const info = getDeviceInfo(req)
+  const tokenId = uuidv4()
+  const refreshTokenId = uuidv4()
+
+  let tokenEntity = {
+    id: tokenId,
+    user_id: user._id.toString(),
+    browser: info.browser,
+    os: info.os,
+    platform: info.platform,
+    device: info.device,
+    token: accessToken,
+    created_at: new Date(),
+    updated_at: new Date()
+  }
+  tokenEntity = await tokenRepository.save(tokenEntity)
+  const ttlInSeconds = 60 * 60 * 15
+  await tokenRepository.expire(tokenEntity[EntityId], ttlInSeconds)
+
+  let refreshTokenEntity = {
+    id: refreshTokenId,
+    access_token_id: tokenId,
+    user_id: user._id.toString(),
+    refresh_token: refreshToken
+  } 
+  refreshTokenEntity = await refreshTokenRepository.save(refreshTokenEntity)
+  const ttlRefreshTokenInSeconds = 60 * 60 * 24 * 30
+  await refreshTokenRepository.expire(refreshTokenEntity[EntityId], ttlRefreshTokenInSeconds)
+
+  return {accessToken, refreshToken}
+}
 
 const userController = {
   register: async (req, res, next) => {
@@ -72,7 +111,7 @@ const userController = {
 
       // insert to user
       const {name, city, district, sub_district, img_url, role, email, password} = user
-      await User.create({
+      const newUser = await User.create({
         name,
         city,
         district,
@@ -82,6 +121,24 @@ const userController = {
         email,
         password
       })
+
+      // web socket
+      let connectedUser = await ConnectedWsUserRepository.search()
+        .where('email').equals(email)
+        .return.all()
+
+      if(connectedUser.length > 0) {
+        connectedUser = connectedUser[0]
+
+        // generate token and access token, store to redis
+        const {accessToken, refreshToken} = await createSession(newUser, req)
+
+        // send access token and refresh token via web socket
+        wsServer.to(connectedUser.ws_id).emit('register', JSON.stringify({
+          accessToken,
+          refreshToken
+        }));
+      }
 
       // response
       const html = (await fs.readFile('./src/view/confirm-success.html')).toString()
@@ -114,68 +171,11 @@ const userController = {
           role: ROLES.CUSTOMER
         })
         await user.save()
-      }
+      }      
       
       // generate token and access token, store to redis
-      const accessToken = generateToken(user.email)
-      const refreshToken = generateRefreshToken(user.email)
-
-      const info = {
-        browser: req.useragent.browser,
-        os: req.useragent.os,
-        platform: req.useragent.platform,
-      }
-
-      switch(true) {
-        case req.useragent.isTablet :
-          info.device = 'Tablet'
-          break
-        case req.useragent.isiPad :
-          info.device = 'IPad'
-          break
-        case req.useragent.isiPod :
-          info.device = 'IPod'
-          break
-        case req.useragent.isiPhone :
-          info.device = 'Phone'
-          break
-        case req.useragent.isiPhoneNative :
-          info.device = 'PhoneNative'
-          break
-        case req.useragent.isAndroid :
-          info.device = 'Android'
-          break
-        case req.useragent.isAndroidNative :
-          info.device = 'AndroidNative'
-          break
-        case req.useragent.isBlackberry :
-          info.device = 'Blackberry'
-          break
-        case req.useragent.isDesktop :
-          info.device = 'Desktop'
-          break
-      }
-
-      let tokenEntity = {
-        user_id: user._id.toString(),
-        browser: info.browser,
-        os: info.os,
-        platform: info.platform,
-        device: info.device,
-        token: accessToken,
-        created_at: new Date(),
-        updated_at: new Date()
-      }
-      tokenEntity = await tokenRepository.save(tokenEntity)
-      const ttlInSeconds = 60 * 60 * 15
-      await tokenRepository.expire(tokenEntity[EntityId], ttlInSeconds)
-
-      let refreshTokenEntity = {
-        user_id: user._id.toString(),
-        refresh_token: refreshToken
-      }
-      await refreshTokenRepository.save(refreshTokenEntity)
-
+      const {accessToken, refreshToken} = await createSession(user, req)
+      
       // set cookies using cookie-parser
       res.cookie('access_token', accessToken, {
         httpOnly: false,
@@ -186,6 +186,7 @@ const userController = {
       res.cookie('refresh_token', refreshToken, {
         httpOnly: false,
         secure: false,
+        maxAge: 60 * 60 * 24 * 30 * 1000
       });
 
       // redirect
@@ -195,8 +196,110 @@ const userController = {
     }
   },
 
+  login: async (req, res, next) => {
+    try {
+      // validasi email & password (joi)
+      const result = validate(userValidation.login, req.body)
 
-  
+      // check user di db, jika tidak ada throw error
+      const user = await User.findOne({ email: result.email })
+      if(!user) {
+        throw new DatabaseError('User not found')
+      } 
+
+      // verify password
+      const isMatch = await user.comparePassword(result.password)
+      if(!isMatch) {
+        throw new DatabaseError('Password not match')
+      }
+
+      // generate token and access token, store to redis
+      const {accessToken, refreshToken} = await createSession(user, req)
+
+      // response
+      responseApi.success(res, {
+        accessToken,
+        refreshToken
+      })
+    } catch(err) {
+      next(err)
+    }
+  },
+
+  logout: async (req, res, next) => { 
+    try {
+      // delete access token and refresh token in redis
+      const token = req.headers.authorization.split(' ')[1];
+      const accessToken = await tokenRepository.search()
+        .where('token').equals(token)
+        .return.all()
+
+      await tokenRepository.remove(accessToken[0][EntityId])
+
+      const accessTokenId = accessToken[0].id
+
+      const refreshToken = await refreshTokenRepository.search()
+        .where('access_token_id').equals(accessTokenId)
+        .return.all()
+
+      await refreshTokenRepository.remove(refreshToken[0][EntityId])
+          
+      // response
+      responseApi.success(res, {})
+    } catch(err) {
+      next(err)
+    }
+  },
+
+  refreshToken: async (req, res, next) => {
+    try {
+      // validate
+      const { refresh_token } = validate(userValidation.refreshToken, req.body)
+
+      // check refresh token in redis, if not exist -> throw error
+      let existingRefreshToken = await refreshTokenRepository.search()
+        .where('refresh_token').equals(refresh_token)
+        .return.all()
+      if(existingRefreshToken.length === 0) {
+        throw new DatabaseError('Refresh token not found', 404)
+      }
+      existingRefreshToken = existingRefreshToken[0]
+
+      // extract email from refresh token
+      const userEmail = jwt.decode(existingRefreshToken.refresh_token).email
+
+      // generate user's device info
+      const DeviceInfo = getDeviceInfo(req)
+
+      // generate access token and store to redis
+      const user = await User.findOne({ email: userEmail })
+      const accessToken = generateToken(user.email)
+      const accessTokenId = uuidv4()
+      let tokenEntity = {
+        id: accessTokenId,
+        user_id: user._id.toString(),
+        browser: DeviceInfo.browser,
+        os: DeviceInfo.os,
+        platform: DeviceInfo.platform,
+        device: DeviceInfo.device,
+        token: accessToken,
+        created_at: new Date(),
+        updated_at: new Date()
+      }
+      tokenEntity = await tokenRepository.save(tokenEntity)
+      const ttlInSeconds = 60 * 60 * 15
+      await tokenRepository.expire(tokenEntity[EntityId], ttlInSeconds)
+
+      // update refresh token's access_token_id with new access token's id in redis
+      existingRefreshToken.access_token_id = accessTokenId
+      await refreshTokenRepository.save(existingRefreshToken)
+
+      // response new access token
+      responseApi.success(res, { access_token: accessToken })
+    } catch(err) {
+      next(err)
+    }
+  }
 }
 
 export default userController

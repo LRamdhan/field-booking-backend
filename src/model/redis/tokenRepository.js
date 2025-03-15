@@ -2,8 +2,11 @@ import { Repository, Schema } from 'redis-om'
 import { redisClient } from './../../config/redisConfig.js'
 
 const tokenSchema = new Schema('token', {
+  id: {
+    type: 'string'
+  },
   user_id: {
-    type: 'text'
+    type: 'string'
   },
   browser: {
     type: 'text'
@@ -18,7 +21,7 @@ const tokenSchema = new Schema('token', {
     type: 'text'
   },
   token: {
-    type: 'text'
+    type: 'string'
   },
   created_at: {
     type: 'date'

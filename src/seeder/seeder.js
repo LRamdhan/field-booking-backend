@@ -6,6 +6,7 @@ import refreshTokenRepository from "./../model/redis/refreshTokenRepository.js";
 import tokenRepository from "./../model/redis/tokenRepository.js";
 import { connectRedis } from "./../config/redisConfig.js";
 import bcrypt from 'bcrypt'
+import ConnectedWsUserRepository from "../model/redis/ConnectedWsUserRepository.js";
 
 const createUsers = async () => {
   await User.create([
@@ -35,6 +36,7 @@ const createUsers = async () => {
 const createRedisIndex = async () => {
   await refreshTokenRepository.createIndex();
   await tokenRepository.createIndex();
+  await ConnectedWsUserRepository.createIndex();
 }
 
 (async () => {
