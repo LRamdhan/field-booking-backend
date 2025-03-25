@@ -7,6 +7,7 @@ import tokenRepository from "./../model/redis/tokenRepository.js";
 import { connectRedis } from "./../config/redisConfig.js";
 import bcrypt from 'bcrypt'
 import ConnectedWsUserRepository from "../model/redis/ConnectedWsUserRepository.js";
+import { EntityId } from "redis-om";
 
 const createUsers = async () => {
   await User.create([
@@ -33,6 +34,21 @@ const createUsers = async () => {
   ])
 }
 
+const resetRedis = async () => {
+  const refreshTokens = await refreshTokenRepository.search().return.all()
+  for(const refreshToken of refreshTokens) {
+    await refreshTokenRepository.remove(refreshToken[EntityId])
+  }
+  const accessTokens = await tokenRepository.search().return.all()
+  for(const accessToken of accessTokens) {
+    await tokenRepository.remove(accessToken[EntityId])
+  }
+  const connectedWsUsers = await ConnectedWsUserRepository.search().return.all()
+  for(const connectedWsUser of connectedWsUsers) {
+    await ConnectedWsUserRepository.remove(connectedWsUser[EntityId])
+  }
+}
+
 const createRedisIndex = async () => {
   await refreshTokenRepository.createIndex();
   await tokenRepository.createIndex();
@@ -47,6 +63,8 @@ const createRedisIndex = async () => {
     await createUsers()
     console.log('New entries is inserted');
     await connectRedis()
+    await resetRedis()
+    console.log('Redis is reseted');
     await createRedisIndex()
     console.log('Redis index is created');
     console.log('Seed success');

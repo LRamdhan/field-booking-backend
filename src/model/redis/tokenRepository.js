@@ -8,18 +8,6 @@ const tokenSchema = new Schema('token', {
   user_id: {
     type: 'string'
   },
-  browser: {
-    type: 'text'
-  },
-  os: {
-    type: 'text'
-  },
-  platform: {
-    type: 'text'
-  },
-  device: {
-    type: 'text'
-  },
   token: {
     type: 'string'
   },

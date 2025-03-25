@@ -28,27 +28,30 @@ const createSession = async (user, req) => {
   const info = getDeviceInfo(req)
   const tokenId = uuidv4()
   const refreshTokenId = uuidv4()
+  const currentTime = new Date()
 
   let tokenEntity = {
     id: tokenId,
     user_id: user._id.toString(),
-    browser: info.browser,
-    os: info.os,
-    platform: info.platform,
-    device: info.device,
     token: accessToken,
-    created_at: new Date(),
-    updated_at: new Date()
+    created_at: currentTime,
+    updated_at: currentTime
   }
   tokenEntity = await tokenRepository.save(tokenEntity)
-  const ttlInSeconds = 60 * 60 * 15
+  const ttlInSeconds = 60 * 15
   await tokenRepository.expire(tokenEntity[EntityId], ttlInSeconds)
 
   let refreshTokenEntity = {
     id: refreshTokenId,
     access_token_id: tokenId,
     user_id: user._id.toString(),
-    refresh_token: refreshToken
+    refresh_token: refreshToken,
+    browser: info.browser,
+    os: info.os,
+    platform: info.platform,
+    device: info.device,
+    created_at: currentTime,
+    updated_at: currentTime
   } 
   refreshTokenEntity = await refreshTokenRepository.save(refreshTokenEntity)
   const ttlRefreshTokenInSeconds = 60 * 60 * 24 * 30
@@ -268,9 +271,6 @@ const userController = {
       // extract email from refresh token
       const userEmail = jwt.decode(existingRefreshToken.refresh_token).email
 
-      // generate user's device info
-      const DeviceInfo = getDeviceInfo(req)
-
       // generate access token and store to redis
       const user = await User.findOne({ email: userEmail })
       const accessToken = generateToken(user.email)
@@ -278,16 +278,12 @@ const userController = {
       let tokenEntity = {
         id: accessTokenId,
         user_id: user._id.toString(),
-        browser: DeviceInfo.browser,
-        os: DeviceInfo.os,
-        platform: DeviceInfo.platform,
-        device: DeviceInfo.device,
         token: accessToken,
         created_at: new Date(),
         updated_at: new Date()
       }
       tokenEntity = await tokenRepository.save(tokenEntity)
-      const ttlInSeconds = 60 * 60 * 15
+      const ttlInSeconds = 60 * 15
       await tokenRepository.expire(tokenEntity[EntityId], ttlInSeconds)
 
       // update refresh token's access_token_id with new access token's id in redis

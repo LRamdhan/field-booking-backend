@@ -13,7 +13,25 @@ const refreshTokenSchema = new Schema('refresh_token', {
   },
   refresh_token: {
     type: 'string'
-  }
+  },
+  browser: {
+    type: 'text'
+  },
+  os: {
+    type: 'text'
+  },
+  platform: {
+    type: 'text'
+  },
+  device: {
+    type: 'text'
+  },
+  created_at: {
+    type: 'date'
+  },
+  updated_at: {
+    type: 'date'
+  },
 })
 
 const refreshTokenRepository = new Repository(refreshTokenSchema, redisClient)
