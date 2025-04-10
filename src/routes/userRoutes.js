@@ -12,17 +12,4 @@ userRoutes.post('/login', userController.login)
 userRoutes.delete('/logout', checkToken, userController.logout)
 userRoutes.post('/refresh-token', userController.refreshToken)
 
-// just for testing purpose
-userRoutes.get('/dummy-data', checkToken, (req, res) => {
-  return res.json({
-    success: true,
-    data: {
-      name: 'Samsul',
-      age: 30,
-      gender: 'male',
-      address: 'Sumedang'
-    }
-  })
-})
-
 export default userRoutes
