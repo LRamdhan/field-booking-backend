@@ -19,6 +19,7 @@ Response Success :
   "message": "Success",
   "data": [
     {
+      "id": "jifwuriwo",
       "name": "Lapang B",
       "rating": 4.5,
       "img": "https://img.com/jifweuriw",
@@ -55,12 +56,13 @@ Response Success :
   "success": true,
   "message": "Success",
   "data": {
+    "id": "iuewjofwi",
     "name": "Lapang A",
     "cost": 80000,
     "rating": 3.4,
     "images": ["https://img.com/jifweuriw", "https://img.com/jifweuriw", ...],
     "location": "outdoor",
-    "grass_type": "vinyl",
+    "floor_type": "vinyl",
     "facilities": ["backup balls", "scoring board", "seats", ...]
   }
 }

@@ -4,6 +4,11 @@ import tokenRepository from "./../model/redis/tokenRepository.js";
 
 const checkToken = async (req, res, next) => {
   try {
+    // check token
+    if(!req.headers.authorization) {
+      throw new DatabaseError('Token is required', 401)
+    }
+
     // check token in redis, if not exist -> throw error
     const token = req.headers.authorization.split(' ')[1];
     let existingToken = await tokenRepository.search()
