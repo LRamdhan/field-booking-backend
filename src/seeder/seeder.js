@@ -14,6 +14,9 @@ import Review from "../model/mongodb/reviewsModel.js";
 import bookedScheduleRepository from "../model/redis/bookedScheduleRepository.js";
 import fieldRepository from "../model/redis/fieldRepository.js";
 import reviewRepository from "../model/redis/reviewRepository.js";
+import { DateTime } from "luxon";
+import PAYMENT from "../constant/payment.js";
+import DeletedBooking from "../model/mongodb/deletedBookingModel.js";
 
 const createUsers = async () => {
   const users = await User.create([
@@ -104,20 +107,24 @@ const createBookings = async (users, fields) => {
     {
       user_id: users[0],
       field_id: fields[0]._id,
-      schedule: new Date(Date.UTC(2025, 4, 15, 14, 0, 0)),
-      status: 'pending'
+      schedule: (DateTime.fromObject({year: 2025, month: 4, day: 22, hour: 17 }, { zone: 'Asia/Jakarta', numberingSystem: 'beng'})).toMillis()
+      ,
+      status: 'pending',
+      payment_type: PAYMENT.POA
     },
     {
       user_id: users[1],
       field_id: fields[1]._id,
-      schedule: new Date(Date.UTC(2025, 4, 18, 17, 0, 0)),
-      status: 'pending'
+      schedule: (DateTime.fromObject({year: 2025, month: 4, day: 25, hour: 21 }, { zone: 'Asia/Jakarta', numberingSystem: 'beng'})).toMillis(),
+      status: 'pending',
+      payment_type: PAYMENT.POA
     },
     {
       user_id: users[1],
       field_id: fields[2]._id,
-      schedule: new Date(Date.UTC(2025, 4, 22, 10, 0, 0)),
-      status: 'pending'
+      schedule: (DateTime.fromObject({year: 2025, month: 4, day: 17, hour: 9 }, { zone: 'Asia/Jakarta', numberingSystem: 'beng'})).toMillis(),
+      status: 'pending',
+      payment_type: PAYMENT.POA
     },
   ])
 }
@@ -162,8 +169,7 @@ const createBookedSchedules = async (bookings) => {
     id: e._id.toString(),
     user_id: e.user_id.toString(),
     field_id: e.field_id.toString(),
-    date: e.schedule,
-    status: e.status,
+    schedule: e.schedule,
   }))
   for(const record of records) {
     await bookedScheduleRepository.save(record)
@@ -246,6 +252,7 @@ const createRedisIndex = async () => {
     await Field.deleteMany();
     await Booking.deleteMany();
     await Review.deleteMany();
+    await DeletedBooking.deleteMany();
     console.log('MongoDB is clear');
 
     // mongodb operation

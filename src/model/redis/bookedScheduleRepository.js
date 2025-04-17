@@ -11,12 +11,9 @@ const bookedScheduleSchema = new Schema('booked_schedule', {
   field_id: {
     type: 'string'
   },
-  date: {
-    type: 'date'
+  schedule: {
+    type: 'number'
   },
-  status: {
-    type: 'string'
-  }
 })
 
 const bookedScheduleRepository = new Repository(bookedScheduleSchema, redisClient)

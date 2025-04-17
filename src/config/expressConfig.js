@@ -9,6 +9,7 @@ import { Server } from 'socket.io';
 import wsSocket from '../socket/wsSocket.js'
 import checkEmail from '../socket/wsMiddleware.js'
 import fieldRoutes from '../routes/fieldRoutes.js'
+import bookingRoutes from '../routes/bookingRoutes.js'
 
 
 // create express instance
@@ -26,6 +27,7 @@ server.use(useragent.express());
 // add route
 server.use('/api/users', userRoutes)
 server.use('/api/fields', fieldRoutes)
+server.use('/api/bookings', bookingRoutes)
 
 // error middlware
 server.use(errorHandler)

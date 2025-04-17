@@ -135,7 +135,7 @@ Header :
 - authorization: token
 
 Queries: 
-- date: Date
+- date: epoch_time
 
 
 Response Success :
@@ -173,8 +173,8 @@ Request Body :
 ```json
 {
   "field_id": "uiwrjogwo",
-  "schedule": DateTime,
-  "payment_type": "COD",
+  "schedule": epoch_time_milis,
+  "payment_type": "ONLINE",
 }
 ```
 
@@ -211,7 +211,7 @@ Header:
 Request Body :
 ```json
 {
-  "order_id": "jofiwuo2o",
+  "payment_id": "jofiwuo2o",
   "transaction_time": DateTime,
   "transaction_status": "pending",
   ...
@@ -262,12 +262,15 @@ Response Success :
     "create_order": "asc",
     "field_id": "joiwuirowjio",
     "page": 3,
+    "limit": 5,
     "bookings": [
       {
         "id": "iowuiorjofs",
-        "field_name": "Lapang C",
-        "schedule": DateTime,
-        "img": "https://img.com/jifowo",
+        "field": {
+          "name": "Lapang C",
+          "img": "https://img.com/jifowo",
+        },
+        "schedule": epoch_time,
         "status": "aktif",
         "payment_token": "jfowuroiw" // depends on payment type
       },
@@ -304,16 +307,16 @@ Response Success :
     "id": "jifwouroiw",
     "payment_token": "jfiwuiorj", // depends on payment type
     "status": "pending",
-    "created_date": DateTime,
-    "schedule": DateTime,
+    "created_date": epoch_time,
+    "schedule": epoch_time,
+    "payment_type": "bayar sekarang",
+    "total": 90000,
     "field": {
       "field_id": "jifewuoriwj",
       "name": "Lapang B",
       "location": "indoor",
       "img": "https://img.com/jifowi",
       "cost": 90000,
-      "payment_type": "bayar sekarang",
-      "total": 90000
     }
   }
 }

@@ -33,6 +33,7 @@ const createSession = async (user, req) => {
   let tokenEntity = {
     id: tokenId,
     user_id: user._id.toString(),
+    role: user.role,
     token: accessToken,
     created_at: currentTime,
     updated_at: currentTime
@@ -278,6 +279,7 @@ const userController = {
       let tokenEntity = {
         id: accessTokenId,
         user_id: user._id.toString(),
+        role: user.role,
         token: accessToken,
         created_at: new Date(),
         updated_at: new Date()

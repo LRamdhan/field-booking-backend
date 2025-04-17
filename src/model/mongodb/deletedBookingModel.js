@@ -12,7 +12,7 @@ const deleteBookingSchema = new mongoose.Schema({
     required: [true, 'Field ID is required'],
   },
   schedule: {
-    type: Date,
+    type: Number,
     required: [true, 'Schedule is required'],
   },
   status: {

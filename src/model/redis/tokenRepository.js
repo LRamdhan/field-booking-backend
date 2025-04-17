@@ -8,6 +8,9 @@ const tokenSchema = new Schema('token', {
   user_id: {
     type: 'string'
   },
+  role: {
+    type: 'string'
+  },
   token: {
     type: 'string'
   },
