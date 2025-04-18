@@ -199,7 +199,7 @@ const createReviewCache = async (reviews) => {
     field_id: e.field_id.toString(),
     rating: e.rating,
     description: e.description,
-    created_at: e.createdAt,
+    created_at: (new Date(e.createdAt)).getTime(),
   }))
   for(const record of records) {
     await reviewRepository.save(record)

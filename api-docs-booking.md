@@ -83,7 +83,7 @@ Response Error :
 
 Role : CUSTOMER | ADMIN
 
-Enpoint : GET /api/reviews
+Enpoint : GET /api/field/:id/review
 
 Header : 
 - authorization: token
@@ -362,7 +362,7 @@ Response Error :
 
 Role : CUSTOMER
 
-Enpoint : POST /api/bookings/:id/review
+Enpoint : POST /api/fields/:id/review
 
 Header: 
 - content-type: application/json

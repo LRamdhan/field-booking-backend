@@ -18,7 +18,7 @@ const reviewSchema = new Schema('reviews', {
     type: 'string'
   },
   created_at: {
-    type: 'date'
+    type: 'number'
   },
 })
 
