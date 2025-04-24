@@ -10,7 +10,9 @@ import wsSocket from '../socket/wsSocket.js'
 import checkEmail from '../socket/wsMiddleware.js'
 import fieldRoutes from '../routes/fieldRoutes.js'
 import bookingRoutes from '../routes/bookingRoutes.js'
-
+import connectMongoDb from './mongodb.js'
+import { connectRedis } from './redisConfig.js'
+import { TESTING_MODE } from './env.js'
 
 // create express instance
 const server = express()
@@ -52,6 +54,13 @@ wsServer.on('connection', wsSocket);
 wsServer.use(checkEmail);
 
 
+// only for testing purpose
+if(TESTING_MODE === 'true') {
+  (async () => {
+    await connectMongoDb(true) // connect mongodb
+    await connectRedis(true) // connect redis
+  })()
+}
 
 
 export { app, wsServer }

@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon src/main.js",
-    "seed": "node src/seeder/seeder.js"
+    "seed": "node src/seeder/seeder.js",
+    "test": "jest",
+    "test-user": "jest --testPathPattern=\"test/user.test.js\""
   },
   "type": "module",
   "keywords": [],
@@ -32,6 +34,11 @@
     "uuid": "^11.1.0"
   },
   "devDependencies": {
-    "nodemon": "^3.1.9"
+    "@babel/plugin-transform-runtime": "^7.26.10",
+    "@babel/preset-env": "^7.26.9",
+    "babel-jest": "^29.7.0",
+    "jest": "^29.7.0",
+    "nodemon": "^3.1.9",
+    "supertest": "^7.1.0"
   }
 }

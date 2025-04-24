@@ -11,7 +11,7 @@ import ValidationError from "./../exception/ValidationError.js"
 import fs from 'fs/promises'
 import { authorizationUrl } from "./../config/googleAuth.js"
 import getUserGoogleInfo from "./../utils/googleApi.js"
-import { FRONTEND_BASE_URL } from "./../config/env.js"
+import { ACCESS_TOKEN_EXPIRE_MINUTE, FRONTEND_BASE_URL, REFRESH_TOKEN_EXPIRE_DAY } from "./../config/env.js"
 import OauthError from "./../exception/OauthError.js"
 import { generateRefreshToken, generateToken } from "../utils/jwtHelper.js"
 import tokenRepository from "../model/redis/tokenRepository.js"
@@ -23,8 +23,8 @@ import { getDeviceInfo } from "./../utils/userAgentHelper.js"
 import jwt from 'jsonwebtoken'
 
 const createSession = async (user, req) => {
-  const accessToken = generateToken(user.email)
-  const refreshToken = generateRefreshToken(user.email)
+  const accessToken = generateToken(user.email, ACCESS_TOKEN_EXPIRE_MINUTE)
+  const refreshToken = generateRefreshToken(user.email, REFRESH_TOKEN_EXPIRE_DAY)
   const info = getDeviceInfo(req)
   const tokenId = uuidv4()
   const refreshTokenId = uuidv4()
@@ -39,7 +39,7 @@ const createSession = async (user, req) => {
     updated_at: currentTime
   }
   tokenEntity = await tokenRepository.save(tokenEntity)
-  const ttlInSeconds = 60 * 15
+  const ttlInSeconds = 60 * ACCESS_TOKEN_EXPIRE_MINUTE
   await tokenRepository.expire(tokenEntity[EntityId], ttlInSeconds)
 
   let refreshTokenEntity = {
@@ -55,7 +55,7 @@ const createSession = async (user, req) => {
     updated_at: currentTime
   } 
   refreshTokenEntity = await refreshTokenRepository.save(refreshTokenEntity)
-  const ttlRefreshTokenInSeconds = 60 * 60 * 24 * 30
+  const ttlRefreshTokenInSeconds = 60 * 60 * 24 * REFRESH_TOKEN_EXPIRE_DAY
   await refreshTokenRepository.expire(refreshTokenEntity[EntityId], ttlRefreshTokenInSeconds)
 
   return {accessToken, refreshToken}
@@ -91,7 +91,7 @@ const userController = {
       // response
       return responseApi.success(res, {
         message: "Silahkan lakukan konfirmasi melalui email yang telah kami kirim"
-      }, 200)
+      }, 201)
     } catch(err) {
       next(err)
     }
@@ -109,7 +109,7 @@ const userController = {
       const user = await UserTemp.findOne({ key: req.query.key })
       if(!user) {
         const html = (await fs.readFile('./src/view/expired-key.html')).toString()
-        throw new DatabaseError('Key not found', 400, 'html', html)
+        throw new DatabaseError('Key not found', 404, 'html', html)
       }
       await UserTemp.findByIdAndDelete(user._id)
 
@@ -154,7 +154,7 @@ const userController = {
 
   loginGoogle: (req, res, next) => {
     try {
-      res.redirect(authorizationUrl)
+      res.redirect(authorizationUrl())
     } catch(err) {
       next(new OauthError(err.message))
     }
@@ -208,7 +208,7 @@ const userController = {
       // check user di db, jika tidak ada throw error
       const user = await User.findOne({ email: result.email })
       if(!user) {
-        throw new DatabaseError('User not found')
+        throw new DatabaseError('User not found', 404)
       } 
 
       // verify password
@@ -222,8 +222,8 @@ const userController = {
 
       // response
       responseApi.success(res, {
-        accessToken,
-        refreshToken
+        access_token: accessToken,
+        refresh_token: refreshToken
       })
     } catch(err) {
       next(err)
@@ -274,7 +274,7 @@ const userController = {
 
       // generate access token and store to redis
       const user = await User.findOne({ email: userEmail })
-      const accessToken = generateToken(user.email)
+      const accessToken = generateToken(user.email, ACCESS_TOKEN_EXPIRE_MINUTE)
       const accessTokenId = uuidv4()
       let tokenEntity = {
         id: accessTokenId,
@@ -285,7 +285,7 @@ const userController = {
         updated_at: new Date()
       }
       tokenEntity = await tokenRepository.save(tokenEntity)
-      const ttlInSeconds = 60 * 15
+      const ttlInSeconds = 60 * ACCESS_TOKEN_EXPIRE_MINUTE
       await tokenRepository.expire(tokenEntity[EntityId], ttlInSeconds)
 
       // update refresh token's access_token_id with new access token's id in redis

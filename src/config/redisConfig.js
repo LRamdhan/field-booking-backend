@@ -5,12 +5,14 @@ const redisClient = createClient({
   url: REDIS_URL
 })
 
-const connectRedis = async () => {
+const connectRedis = async (stopLog) => {
   try {
     await redisClient.connect()
-    const ping = await redisClient.ping()    
-    console.log('PING...' + ping);
-    console.log('Redis is Conected');
+    if(!stopLog) {
+      const ping = await redisClient.ping()    
+      console.log('PING...' + ping);
+      console.log('Redis is Conected');
+    }
   } catch(err) {
     console.log(err.message);
   }
