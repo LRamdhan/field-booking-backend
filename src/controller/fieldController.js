@@ -62,12 +62,14 @@ const fieldController = {
   getSchedules: async (req, res, next) => {
     try {
       // validate query date
-      let date = validate(fieldValidation.getBookedSchedule, req.query.date)
-      date = (new Date(date)).getTime()
+      let date = validate(fieldValidation.getBookedSchedule(), req.query.date)
+      date = (new Date(date))
+      date.setHours(1, 0, 0, 0)
+      date = date.getTime()
 
       // get schedules from redis
       const schedules = await bookedScheduleRepository.search()
-        .where('schedule').is.between(date, date + 86400000)
+        .where('schedule').between(date, date + 86400000)
         .and('field_id').equals(req.params.id)
         .return.all()
 
@@ -96,8 +98,12 @@ const fieldController = {
       })
 
       // check if field exists
-      const field = await Field.findById(field_id)
-      if(!field) {
+      try {
+        const field = await Field.findById(field_id)
+        if(!field) {
+          throw new Error()
+        }
+      } catch(err) {
         throw new DatabaseError('Field not found', 404)
       }
 
@@ -135,8 +141,12 @@ const fieldController = {
       })
 
       // check if field exists
-      const field = await Field.findById(data.field_id)
-      if(!field) {
+      try {
+        const field = await Field.findById(data.field_id)
+        if(!field) {
+          throw new Error()
+        }
+      } catch(err) {
         throw new DatabaseError('Field not found', 404)
       }
 

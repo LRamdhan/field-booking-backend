@@ -11,5 +11,4 @@ fieldRoutes.get('/:id/schedules', checkToken(ROLES.ADMIN, ROLES.CUSTOMER), field
 fieldRoutes.post('/:id/review', checkToken(ROLES.CUSTOMER), fieldController.createReview)
 fieldRoutes.get('/:id/review', checkToken(ROLES.CUSTOMER, ROLES.ADMIN), fieldController.getReview)
 
-
 export default fieldRoutes

@@ -1,7 +1,11 @@
 import Joi from 'joi'
 
 const fieldValidation = {
-  getBookedSchedule: Joi.date().timestamp('javascript').greater('now').required(),
+  getBookedSchedule: () => {
+    let currentDate = new Date()
+    currentDate = (currentDate.getMonth() + 1) + '-' + currentDate.getDate() + '-' + currentDate.getFullYear()
+    return Joi.date().timestamp('javascript').greater(currentDate).required()
+  },
 
   createReview: Joi.object({
     field_id: Joi.string().min(24).trim().required(),

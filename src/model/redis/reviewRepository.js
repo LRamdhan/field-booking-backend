@@ -3,7 +3,7 @@ import { redisClient } from './../../config/redisConfig.js'
 
 const reviewSchema = new Schema('reviews', {
   id: {
-    type: 'string'
+    type: 'text'
   },
   user_id: {
     type: 'string'

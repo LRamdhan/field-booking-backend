@@ -372,7 +372,7 @@ Request Body :
 ```json
 {
   "description": "lorem ipsum dolor amet",
-  "rating": "4"
+  "rating": 4
 }
 ```
 

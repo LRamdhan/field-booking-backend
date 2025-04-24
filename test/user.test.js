@@ -1,16 +1,11 @@
 import supertest from 'supertest'
 import { app } from './../src/config/expressConfig.js'
 import UserTemp from '../src/model/mongodb/userTempModel.js'
-import refreshTokenRepository from '../src/model/redis/refreshTokenRepository.js'
-import tokenRepository from '../src/model/redis/tokenRepository.js'
-import { EntityId } from 'redis-om'
 import mongoose from 'mongoose'
 import { redisClient } from '../src/config/redisConfig.js'
-import { createTempUser } from './test-utils.js'
+import { createTempUser, deleteSessionInRedis, login } from './test-utils.js'
 import User from '../src/model/mongodb/userModel.js'
-
-const existingEmail = 'kurniawan@gmail.com'
-const existingPassword = 'empatlima45'
+import EXISTING_USER from '../src/constant/user.js'
 
 afterAll(async () => {
   // close server
@@ -77,7 +72,7 @@ describe('POST /api/users/register', () => {
         city: "Wado",
         district: "Malangbong",
         sub_district: "Cisarua",
-        email: existingEmail,
+        email: EXISTING_USER.email,
         password: "secre832jf92t",
       })
     expect(result.status).toBe(400);
@@ -127,16 +122,7 @@ describe('POST /api/users/login', () => {
   ]
 
   afterAll(async () => {
-    // remove all refresh tokens
-    const refreshTokens = await refreshTokenRepository.search().return.all()
-    for(const refreshToken of refreshTokens) {
-      await refreshTokenRepository.remove(refreshToken[EntityId])
-    }
-    // remove all access tokens
-    const accessTokens = await tokenRepository.search().return.all()
-    for(const accessToken of accessTokens) {
-      await tokenRepository.remove(accessToken[EntityId])
-    }
+    await deleteSessionInRedis()
   })
 
   it.each(validationScenarios)('should return validation error', async (body, status) => {
@@ -163,7 +149,7 @@ describe('POST /api/users/login', () => {
       .post('/api/users/login')
       .set('content-type', 'application/json')
       .send({
-        email: existingEmail,
+        email: EXISTING_USER.email,
         password: "apajalah983274",
       })
     expect(result.status).toBe(400);
@@ -174,8 +160,8 @@ describe('POST /api/users/login', () => {
       .post('/api/users/login')
       .set('content-type', 'application/json')
       .send({
-        email: existingEmail,
-        password: existingPassword
+        email: EXISTING_USER.email,
+        password: EXISTING_USER.password
       })
     expect(result.status).toBe(200);
     expect(result.body.data.access_token).toBeDefined();
@@ -227,27 +213,12 @@ describe('DELETE /api/users/logout', () => {
 
   // login user
   beforeEach(async () => {
-    const result = await supertest(app)
-      .post('/api/users/login')
-      .set('content-type', 'application/json')
-      .send({
-        email: existingEmail,
-        password: existingPassword
-      })
+    const result = await login()
     accessToken = result.body.data.access_token
   })
 
   afterEach(async () => {
-    // remove all refresh tokens
-    const refreshTokens = await refreshTokenRepository.search().return.all()
-    for(const refreshToken of refreshTokens) {
-      await refreshTokenRepository.remove(refreshToken[EntityId])
-    }
-    // remove all access tokens
-    const accessTokens = await tokenRepository.search().return.all()
-    for(const accessToken of accessTokens) {
-      await tokenRepository.remove(accessToken[EntityId])
-    }
+    await deleteSessionInRedis()
     accessToken = ''
   })
 
@@ -271,28 +242,13 @@ describe('POST /api/users/refresh-token', () => {
   let refreshToken
 
   beforeAll(async () => {
-    const result = await supertest(app)
-      .post('/api/users/login')
-      .set('content-type', 'application/json')
-      .send({
-        email: existingEmail,
-        password: existingPassword
-      })
+    const result = await login()
     accessToken = result.body.data.access_token
     refreshToken = result.body.data.refresh_token
   })
 
   afterAll(async () => {
-    // remove all refresh tokens
-    const refreshTokens = await refreshTokenRepository.search().return.all()
-    for(const refreshToken of refreshTokens) {
-      await refreshTokenRepository.remove(refreshToken[EntityId])
-    }
-    // remove all access tokens
-    const accessTokens = await tokenRepository.search().return.all()
-    for(const accessToken of accessTokens) {
-      await tokenRepository.remove(accessToken[EntityId])
-    }
+    await deleteSessionInRedis()
     accessToken = ''
   })
 
