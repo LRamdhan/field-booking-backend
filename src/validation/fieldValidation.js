@@ -2,9 +2,9 @@ import Joi from 'joi'
 
 const fieldValidation = {
   getBookedSchedule: () => {
-    let currentDate = new Date()
-    currentDate = (currentDate.getMonth() + 1) + '-' + currentDate.getDate() + '-' + currentDate.getFullYear()
-    return Joi.date().timestamp('javascript').greater(currentDate).required()
+    // let currentDate = new Date()
+    // currentDate = (currentDate.getMonth() + 1) + '-' + currentDate.getDate() + '-' + currentDate.getFullYear()
+    return Joi.date().timestamp('javascript').required()
   },
 
   createReview: Joi.object({

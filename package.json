@@ -8,7 +8,8 @@
     "seed": "node src/seeder/seeder.js",
     "test": "jest",
     "test-user": "jest --testPathPattern=\"test/user.test.js\"",
-    "test-field": "jest --testPathPattern=\"test/field.test.js\" testNamePattern=\"GET /api/fields/:id/review\""
+    "test-field": "jest --testPathPattern=\"test/field.test.js\"",
+    "test-booking": "jest --testPathPattern=\"test/booking.test.js\""
   },
   "type": "module",
   "keywords": [],

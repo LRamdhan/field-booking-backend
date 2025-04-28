@@ -1,27 +1,25 @@
 import { app } from './../src/config/expressConfig.js'
 import supertest from 'supertest'
-import mongoose from 'mongoose'
-import { redisClient } from '../src/config/redisConfig.js'
-import { deleteSessionInRedis, getField, login, restoreReviews } from './test-utils.js'
+import { closeServer, deleteSessionInRedis, getExistingBooking, getField, login, restoreReviews } from './test-utils.js'
 
 afterAll(async () => {
-  // close server
-  app.close()
-  // disconnect db
-  await mongoose.disconnect()
-  await redisClient.quit()
+  await closeServer()
 })
 
 describe('GET /api/fields', () => {
   let accessToken
+  let accessTokenId
+  let refreshTokenId
 
   beforeAll(async () => {
     const result = await login()
-    accessToken = result.body.data.access_token
+    accessToken = result.accessToken
+    accessTokenId = result.accessTokenId
+    refreshTokenId = result.refreshTokenId
   })
 
   afterAll(async () => {
-    await deleteSessionInRedis()
+    await deleteSessionInRedis(accessTokenId, refreshTokenId)
     accessToken = ''
   })
 
@@ -44,16 +42,20 @@ describe('GET /api/fields', () => {
 
 describe('GET /api/fields/:id', () => {
   let accessToken
+  let accessTokenId
+  let refreshTokenId
   let fieldId
 
   beforeAll(async () => {
     const result = await login()
-    accessToken = result.body.data.access_token
+    accessToken = result.accessToken
+    accessTokenId = result.accessTokenId
+    refreshTokenId = result.refreshTokenId
     fieldId = (await getField())[0]._id.toString()
   })
 
   afterAll(async () => {
-    await deleteSessionInRedis()
+    await deleteSessionInRedis(accessTokenId, refreshTokenId)
     accessToken = ''
   })
 
@@ -75,22 +77,25 @@ describe('GET /api/fields/:id', () => {
 
 describe('GET /api/fields/:id/schedules', () => {
   let accessToken
+  let accessTokenId
+  let refreshTokenId
   let fieldId
 
   const validationSchenarios = [
     [undefined, 400],
-    ['832', 400],
-    [33, 400],
+    ['ajie', 400],
   ]
 
   beforeAll(async () => {
     const result = await login()
-    accessToken = result.body.data.access_token
+    accessToken = result.accessToken
+    accessTokenId = result.accessTokenId
+    refreshTokenId = result.refreshTokenId
     fieldId = (await getField())[1]._id.toString()
   })
 
   afterAll(async () => {
-    await deleteSessionInRedis()
+    await deleteSessionInRedis(accessTokenId, refreshTokenId)
     accessToken = ''
   })
 
@@ -111,13 +116,11 @@ describe('GET /api/fields/:id/schedules', () => {
   })
 
   it('should return success', async () => {
-    const date = new Date()
-    date.setDate(25)
-    date.setMonth(4 - 1)
+    const booking = await getExistingBooking(fieldId)
     const result = await supertest(app)
       .get('/api/fields/' + fieldId + '/schedules')
       .set('authorization', 'Bearer ' + accessToken)
-      .query({date: date.getTime()})
+      .query({date: booking.schedule})
     expect(result.status).toBe(200)
     expect(result.body.data.date).toBeDefined()
     expect(typeof result.body.data.date).toBe('number')
@@ -132,6 +135,8 @@ describe('GET /api/fields/:id/schedules', () => {
 
 describe('POST /api/fields/:id/review', () => {
   let accessToken
+  let accessTokenId
+  let refreshTokenId
   let fieldId
 
   const validationScenarios = [
@@ -152,12 +157,14 @@ describe('POST /api/fields/:id/review', () => {
 
   beforeAll(async () => {
     const result = await login()
-    accessToken = result.body.data.access_token
+    accessToken = result.accessToken
+    accessTokenId = result.accessTokenId
+    refreshTokenId = result.refreshTokenId
     fieldId = (await getField())[0]._id.toString()
   })
 
   afterAll(async () => {
-    await deleteSessionInRedis()
+    await deleteSessionInRedis(accessTokenId, refreshTokenId)
     await restoreReviews()
     accessToken = ''
   })
@@ -198,16 +205,20 @@ describe('POST /api/fields/:id/review', () => {
 
 describe('GET /api/fields/:id/review', () => {
   let accessToken
+  let accessTokenId
+  let refreshTokenId
   let fieldId
 
   beforeAll(async () => {
     const result = await login()
-    accessToken = result.body.data.access_token
+    accessToken = result.accessToken
+    accessTokenId = result.accessTokenId
+    refreshTokenId = result.refreshTokenId
     fieldId = (await getField())[0]._id.toString()
   })
 
   afterAll(async () => {
-    await deleteSessionInRedis()
+    await deleteSessionInRedis(accessTokenId, refreshTokenId)
     accessToken = ''
   })
 

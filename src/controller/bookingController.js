@@ -8,8 +8,8 @@ import bookedScheduleRepository from "../model/redis/bookedScheduleRepository.js
 import responseApi from "../utils/responseApi.js"
 import bookingValidation from "../validation/bookingValidation.js"
 import validate from "../validation/validate.js"
-import { v4 as uuidv4 } from 'uuid';
 import { EntityId } from 'redis-om'
+import generateRandomString from "./../utils/generateRandomString.js"
 
 const bookingController = {
   createBooking : async (req, res, next) => {
@@ -18,8 +18,13 @@ const bookingController = {
       const body = validate(bookingValidation.create, req.body)
 
       // check if fields exist, if not exist -> throw error
-      const field = await Field.findById(body.field_id)
-      if(!field) {
+      let field
+      try {
+        field = await Field.findById(body.field_id)
+        if(!field) {
+          throw new Error()
+        }
+      } catch(err) {
         throw new DatabaseError('Field not found', 404)
       }
 
@@ -41,7 +46,7 @@ const bookingController = {
 
       // if payment_type is ONLINE, register payment to midtrans
       if(body.payment_type === PAYMENT.ONLINE) {
-        const paymentId = uuidv4()
+        const paymentId = generateRandomString()
         const grossAmount = parseInt(field.price)
         let parameter = {
           "transaction_details": {
@@ -245,7 +250,7 @@ const bookingController = {
 
       // delete in redis
       let cachedBooking = await bookedScheduleRepository.search()
-        .where('id').eq(deletedBooking._id.toString()).return.all()
+        .where('id').match(deletedBooking._id.toString()).return.all()
       cachedBooking = cachedBooking[0]
       const cachedBookingId = cachedBooking[EntityId]
       await bookedScheduleRepository.remove(cachedBookingId)

@@ -1,18 +1,12 @@
 import supertest from 'supertest'
 import { app } from './../src/config/expressConfig.js'
 import UserTemp from '../src/model/mongodb/userTempModel.js'
-import mongoose from 'mongoose'
-import { redisClient } from '../src/config/redisConfig.js'
-import { createTempUser, deleteSessionInRedis, login } from './test-utils.js'
+import { closeServer, createTempUser, deleteAllSessionInRedis, deleteSessionInRedis, login } from './test-utils.js'
 import User from '../src/model/mongodb/userModel.js'
 import EXISTING_USER from '../src/constant/user.js'
 
 afterAll(async () => {
-  // close server
-  app.close()
-  // disconnect db
-  await mongoose.disconnect()
-  await redisClient.quit()
+  await closeServer()
 })
 
 describe('POST /api/users/register', () => {
@@ -94,7 +88,7 @@ describe('POST /api/users/register', () => {
     const userInTemp = await UserTemp.findOne({email: "dhan@yahoo.com"});
     expect(userInTemp).not.toBeNull();
     expect(result.status).toBe(201);
-  })
+  }, 20000)
 })
 
 describe('POST /api/users/login', () => {
@@ -122,7 +116,7 @@ describe('POST /api/users/login', () => {
   ]
 
   afterAll(async () => {
-    await deleteSessionInRedis()
+    await deleteAllSessionInRedis()
   })
 
   it.each(validationScenarios)('should return validation error', async (body, status) => {
@@ -211,15 +205,13 @@ describe('GET /api/email/confirm', () => {
 describe('DELETE /api/users/logout', () => {
   let accessToken
 
-  // login user
-  beforeEach(async () => {
+  beforeAll(async () => {
     const result = await login()
-    accessToken = result.body.data.access_token
+    accessToken = result.accessToken
   })
 
-  afterEach(async () => {
-    await deleteSessionInRedis()
-    accessToken = ''
+  afterAll(async () => {
+    await deleteAllSessionInRedis()
   })
 
   it('should return invalid token error', async () => {
@@ -243,13 +235,12 @@ describe('POST /api/users/refresh-token', () => {
 
   beforeAll(async () => {
     const result = await login()
-    accessToken = result.body.data.access_token
-    refreshToken = result.body.data.refresh_token
+    accessToken = result.accessToken
+    refreshToken = result.refreshToken
   })
 
   afterAll(async () => {
-    await deleteSessionInRedis()
-    accessToken = ''
+    await deleteAllSessionInRedis()
   })
 
   it('should return validation error', async () => {

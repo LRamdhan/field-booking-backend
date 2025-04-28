@@ -3,7 +3,7 @@ import { redisClient } from './../../config/redisConfig.js'
 
 const bookedScheduleSchema = new Schema('booked_schedule', {
   id: {
-    type: 'string'
+    type: 'text'
   },
   user_id: {
     type: 'string'

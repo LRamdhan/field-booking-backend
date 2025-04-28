@@ -11,55 +11,17 @@ import ValidationError from "./../exception/ValidationError.js"
 import fs from 'fs/promises'
 import { authorizationUrl } from "./../config/googleAuth.js"
 import getUserGoogleInfo from "./../utils/googleApi.js"
-import { ACCESS_TOKEN_EXPIRE_MINUTE, FRONTEND_BASE_URL, REFRESH_TOKEN_EXPIRE_DAY } from "./../config/env.js"
+import { ACCESS_TOKEN_EXPIRE_MINUTE, FRONTEND_BASE_URL } from "./../config/env.js"
 import OauthError from "./../exception/OauthError.js"
-import { generateRefreshToken, generateToken } from "../utils/jwtHelper.js"
+import { generateToken } from "../utils/jwtHelper.js"
 import tokenRepository from "../model/redis/tokenRepository.js"
 import { EntityId } from 'redis-om'
 import refreshTokenRepository from "../model/redis/refreshTokenRepository.js"
 import ConnectedWsUserRepository from "../model/redis/ConnectedWsUserRepository.js"
 import { wsServer } from "../config/expressConfig.js"
-import { getDeviceInfo } from "./../utils/userAgentHelper.js"
 import jwt from 'jsonwebtoken'
-
-const createSession = async (user, req) => {
-  const accessToken = generateToken(user.email, ACCESS_TOKEN_EXPIRE_MINUTE)
-  const refreshToken = generateRefreshToken(user.email, REFRESH_TOKEN_EXPIRE_DAY)
-  const info = getDeviceInfo(req)
-  const tokenId = uuidv4()
-  const refreshTokenId = uuidv4()
-  const currentTime = new Date()
-
-  let tokenEntity = {
-    id: tokenId,
-    user_id: user._id.toString(),
-    role: user.role,
-    token: accessToken,
-    created_at: currentTime,
-    updated_at: currentTime
-  }
-  tokenEntity = await tokenRepository.save(tokenEntity)
-  const ttlInSeconds = 60 * ACCESS_TOKEN_EXPIRE_MINUTE
-  await tokenRepository.expire(tokenEntity[EntityId], ttlInSeconds)
-
-  let refreshTokenEntity = {
-    id: refreshTokenId,
-    access_token_id: tokenId,
-    user_id: user._id.toString(),
-    refresh_token: refreshToken,
-    browser: info.browser,
-    os: info.os,
-    platform: info.platform,
-    device: info.device,
-    created_at: currentTime,
-    updated_at: currentTime
-  } 
-  refreshTokenEntity = await refreshTokenRepository.save(refreshTokenEntity)
-  const ttlRefreshTokenInSeconds = 60 * 60 * 24 * REFRESH_TOKEN_EXPIRE_DAY
-  await refreshTokenRepository.expire(refreshTokenEntity[EntityId], ttlRefreshTokenInSeconds)
-
-  return {accessToken, refreshToken}
-}
+import { createSession } from "../utils/session.js"
+import generateRandomString from "../utils/generateRandomString.js"
 
 const userController = {
   register: async (req, res, next) => {
@@ -82,7 +44,7 @@ const userController = {
         ...body,
         img_url: "",
         role: ROLES.CUSTOMER,
-        key: uuidv4()
+        key: generateRandomString()
       })
 
       // send email confirmation
@@ -275,7 +237,7 @@ const userController = {
       // generate access token and store to redis
       const user = await User.findOne({ email: userEmail })
       const accessToken = generateToken(user.email, ACCESS_TOKEN_EXPIRE_MINUTE)
-      const accessTokenId = uuidv4()
+      const accessTokenId = generateRandomString()
       let tokenEntity = {
         id: accessTokenId,
         user_id: user._id.toString(),

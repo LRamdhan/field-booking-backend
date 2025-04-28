@@ -3,7 +3,7 @@ import { redisClient } from './../../config/redisConfig.js'
 
 const refreshTokenSchema = new Schema('refresh_token', {
   id: {
-    type: 'string'
+    type: 'text'
   },
   user_id: {
     type: 'string'
