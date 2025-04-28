@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "nodemon src/main.js",
     "seed": "node src/seeder/seeder.js",
-    "test": "jest",
+    "test": "jest --runInBand",
     "test-user": "jest --testPathPattern=\"test/user.test.js\"",
     "test-field": "jest --testPathPattern=\"test/field.test.js\"",
     "test-booking": "jest --testPathPattern=\"test/booking.test.js\""
