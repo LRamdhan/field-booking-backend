@@ -15,7 +15,7 @@ const transporter = nodemailer.createTransport({
 });
 
 const confirmEmailUrl = BASE_URL + "/api/users/email/confirm"
-const template = (await fs.readFile('./src/view/email-confirm.html')).toString()
+const template = ((async () => await fs.readFile('./src/view/email-confirm.html'))()).toString()
 
 const mailOptions = (destinationEmail, key) => ({
   from: `FieldBooking <${EMAIL_USER}>`,

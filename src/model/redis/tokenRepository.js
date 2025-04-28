@@ -3,9 +3,12 @@ import { redisClient } from './../../config/redisConfig.js'
 
 const tokenSchema = new Schema('token', {
   id: {
-    type: 'string'
+    type: 'text'
   },
   user_id: {
+    type: 'string'
+  },
+  role: {
     type: 'string'
   },
   token: {

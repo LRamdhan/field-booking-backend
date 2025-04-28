@@ -1,15 +1,16 @@
 import jwt from 'jsonwebtoken';
 import { JWT_ACCESS_TOKEN_SECRET, JWT_REFRESH_TOKEN_SECRET } from './../config/env.js';
 
-function generateToken(email) {
+function generateToken(email, expireSeconds) {
   return jwt.sign({email}, JWT_ACCESS_TOKEN_SECRET, {
-    expiresIn: '15m',
+    expiresIn: expireSeconds +'m',
     algorithm: 'HS384'
   });
 }
 
-function generateRefreshToken(email) {
+function generateRefreshToken(email, expireDays) {
   return jwt.sign({email}, JWT_REFRESH_TOKEN_SECRET, {
+    expiresIn: expireDays + 'days',
     algorithm: 'HS384'
   });
 }

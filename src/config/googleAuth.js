@@ -16,10 +16,10 @@ const scopes = [
 ]
 
 // generate url/start url
-const authorizationUrl = oauthClient.generateAuthUrl({
+const authorizationUrl = () => (oauthClient.generateAuthUrl({
   access_type: 'offline',
   scope: scopes,
   include_granted_scopes: true
-});
+}))
 
 export {oauthClient, authorizationUrl};

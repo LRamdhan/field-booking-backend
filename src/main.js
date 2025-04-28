@@ -9,7 +9,7 @@ await connectMongoDb()
 await connectRedis()
 
 // start server
-const PORT = 1122
+const PORT = 3000
 app.listen(PORT, () => console.log('Express runs on localhost:' + PORT))
 
 
