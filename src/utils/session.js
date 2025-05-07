@@ -1,11 +1,11 @@
-import { ACCESS_TOKEN_EXPIRE_MINUTE, REFRESH_TOKEN_EXPIRE_DAY } from "../config/env"
-import { getDeviceInfo } from "./userAgentHelper";
+import { ACCESS_TOKEN_EXPIRE_MINUTE, REFRESH_TOKEN_EXPIRE_DAY } from "./../config/env.js"
+import { getDeviceInfo } from "./userAgentHelper.js";
 import { DateTime } from "luxon";
-import tokenRepository from "../model/redis/tokenRepository";
-import refreshTokenRepository from "../model/redis/refreshTokenRepository";
-import { generateRefreshToken, generateToken } from "./jwtHelper";
+import tokenRepository from "../model/redis/tokenRepository.js";
+import refreshTokenRepository from "../model/redis/refreshTokenRepository.js";
+import { generateRefreshToken, generateToken } from "./jwtHelper.js";
 import { EntityId } from "redis-om";
-import generateRandomString from "./generateRandomString";
+import generateRandomString from "./generateRandomString.js";
 
 export const createSession = async (user, req) => {
   const accessToken = generateToken(user.email, ACCESS_TOKEN_EXPIRE_MINUTE)

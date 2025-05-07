@@ -32,7 +32,7 @@ const userController = {
       // check email in db
       const result = await User.findOne({ email: body.email })
       if(result) {
-        throw new DatabaseError('Email already exist')
+        throw new DatabaseError('Email already exist', 409)
       }
 
       // check user in temp colletion and insert
