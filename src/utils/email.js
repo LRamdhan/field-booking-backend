@@ -1,6 +1,6 @@
 import nodemailer from 'nodemailer'
 import mustache from 'mustache'
-import fs from 'fs/promises'
+import fs from 'fs'
 import { BASE_URL, EMAIL_HOST, EMAIL_PASS, EMAIL_SERVICE, EMAIL_USER } from './../config/env.js';
 
 const transporter = nodemailer.createTransport({
@@ -15,11 +15,7 @@ const transporter = nodemailer.createTransport({
 });
 
 const confirmEmailUrl = BASE_URL + "/api/users/email/confirm"
-const template = await (async () => {
-  const raw =  await fs.readFile('./src/view/email-confirm.html')
-    .then(data => (data.toString()))
-  return raw
-})()  
+let template = (fs.readFileSync('./src/view/email-confirm.html')).toString()
   
 const mailOptions = (destinationEmail, key) => ({
   from: `FieldBooking <${EMAIL_USER}>`,

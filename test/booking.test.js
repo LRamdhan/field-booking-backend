@@ -1,7 +1,7 @@
-import { app } from "../src/config/expressConfig"
-import refreshTokenRepository from "../src/model/redis/refreshTokenRepository"
-import tokenRepository from "../src/model/redis/tokenRepository"
-import { clearDeletedBookings, closeServer, createBooking, deleteSessionInRedis, getExistingBooking, getField, login, restoreBookings } from "./test-utils"
+import { app } from "../src/config/expressConfig.js"
+import refreshTokenRepository from "../src/model/redis/refreshTokenRepository.js"
+import tokenRepository from "../src/model/redis/tokenRepository.js"
+import { clearDeletedBookings, closeServer, createBooking, deleteSessionInRedis, getExistingBooking, getField, login, restoreBookings } from "./test-utils.js"
 import supertest from "supertest"
 
 afterAll(async () => {
