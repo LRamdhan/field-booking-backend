@@ -1,32 +1,19 @@
 import { app } from './../src/config/expressConfig.js'
 import supertest from 'supertest'
-import { closeServer, deleteSessionInRedis, getExistingBooking, getField, login, restoreReviews } from './test-utils.js'
+import { closeServer, deleteSessionInRedis, getExistingBooking, getField, login, openServer, restoreReviews } from './test-utils.js'
+
+beforeAll(async () => {
+  await openServer()
+})
 
 afterAll(async () => {
   await closeServer()
 })
 
 describe('GET /api/fields', () => {
-  let accessToken
-  let accessTokenId
-  let refreshTokenId
-
-  beforeAll(async () => {
-    const result = await login()
-    accessToken = result.accessToken
-    accessTokenId = result.accessTokenId
-    refreshTokenId = result.refreshTokenId
-  })
-
-  afterAll(async () => {
-    await deleteSessionInRedis(accessTokenId, refreshTokenId)
-    accessToken = ''
-  })
-
   it('should return success', async () => {
     const result = await supertest(app)
       .get('/api/fields')
-      .set('authorization', 'Bearer ' + accessToken)
     expect(result.status).toBe(200)
     expect(result.body.data).toBeDefined()
     for(const field of result.body.data) {
@@ -41,28 +28,15 @@ describe('GET /api/fields', () => {
 })
 
 describe('GET /api/fields/:id', () => {
-  let accessToken
-  let accessTokenId
-  let refreshTokenId
   let fieldId
 
   beforeAll(async () => {
-    const result = await login()
-    accessToken = result.accessToken
-    accessTokenId = result.accessTokenId
-    refreshTokenId = result.refreshTokenId
     fieldId = (await getField())[0]._id.toString()
-  })
-
-  afterAll(async () => {
-    await deleteSessionInRedis(accessTokenId, refreshTokenId)
-    accessToken = ''
   })
 
   it('should return success', async () => {
     const result = await supertest(app)
       .get('/api/fields/' + fieldId)
-      .set('authorization', 'Bearer ' + accessToken)
     expect(result.status).toBe(200)
     expect(result.body.data.id).toBeDefined()
     expect(result.body.data.name).toBeDefined()
@@ -76,9 +50,6 @@ describe('GET /api/fields/:id', () => {
 })
 
 describe('GET /api/fields/:id/schedules', () => {
-  let accessToken
-  let accessTokenId
-  let refreshTokenId
   let fieldId
 
   const validationSchenarios = [
@@ -87,22 +58,12 @@ describe('GET /api/fields/:id/schedules', () => {
   ]
 
   beforeAll(async () => {
-    const result = await login()
-    accessToken = result.accessToken
-    accessTokenId = result.accessTokenId
-    refreshTokenId = result.refreshTokenId
     fieldId = (await getField())[1]._id.toString()
-  })
-
-  afterAll(async () => {
-    await deleteSessionInRedis(accessTokenId, refreshTokenId)
-    accessToken = ''
   })
 
   it.each(validationSchenarios)('should return validation error', async (epochTime, expectedStatus) => {
     const result = await supertest(app)
       .get('/api/fields/' + fieldId + '/schedules')
-      .set('authorization', 'Bearer ' + accessToken)
       .query({date: epochTime})
     expect(result.status).toBe(expectedStatus)
   })
@@ -110,7 +71,6 @@ describe('GET /api/fields/:id/schedules', () => {
   it('should return not found error', async () => {
     const result = await supertest(app)
       .get('/api/fields/' + fieldId + '/schedules')
-      .set('authorization', 'Bearer ' + accessToken)
       .query({date: 1745479433105})
     expect(result.status).toBe(404)    
   })
@@ -119,7 +79,6 @@ describe('GET /api/fields/:id/schedules', () => {
     const booking = await getExistingBooking(fieldId)
     const result = await supertest(app)
       .get('/api/fields/' + fieldId + '/schedules')
-      .set('authorization', 'Bearer ' + accessToken)
       .query({date: booking.schedule})
     expect(result.status).toBe(200)
     expect(result.body.data.date).toBeDefined()
@@ -204,22 +163,10 @@ describe('POST /api/fields/:id/review', () => {
 })
 
 describe('GET /api/fields/:id/review', () => {
-  let accessToken
-  let accessTokenId
-  let refreshTokenId
   let fieldId
 
   beforeAll(async () => {
-    const result = await login()
-    accessToken = result.accessToken
-    accessTokenId = result.accessTokenId
-    refreshTokenId = result.refreshTokenId
     fieldId = (await getField())[0]._id.toString()
-  })
-
-  afterAll(async () => {
-    await deleteSessionInRedis(accessTokenId, refreshTokenId)
-    accessToken = ''
   })
 
   const validationScenarios = [
@@ -249,7 +196,6 @@ describe('GET /api/fields/:id/review', () => {
   it.each(validationScenarios)('should return validation error', async (queries, expectedStatus) => {
     const result = await supertest(app)
       .get('/api/fields/' + fieldId + '/review')
-      .set('authorization', 'Bearer ' + accessToken)
       .query(queries)
     expect(result.status).toBe(expectedStatus)
   })
@@ -257,7 +203,6 @@ describe('GET /api/fields/:id/review', () => {
   it('should return field not found error', async () => {
     const result = await supertest(app)
       .get('/api/fields/' + '6800f6c322f3by12eedo9ada' + '/review')
-      .set('authorization', 'Bearer ' + accessToken)
       .query({
         page: 1,
         limit: 5
@@ -268,7 +213,6 @@ describe('GET /api/fields/:id/review', () => {
   it('should return success', async () => {
     const result = await supertest(app)
       .get('/api/fields/' + fieldId + '/review')
-      .set('authorization', 'Bearer ' + accessToken)
       .query({
         page: 1,
         limit: 5

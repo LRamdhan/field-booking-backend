@@ -321,11 +321,6 @@
         ],
         "summary": "Get all fields",
         "description": "Role : CUSTOMER | ADMIN",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
         "responses": {
           "200": {
             "content": {
@@ -384,11 +379,6 @@
         ],
         "summary": "Get field by id",
         "description": "Role : CUSTOMER | ADMIN",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
         "parameters": [
           {
             "name": "id",
@@ -470,18 +460,13 @@
         }
       }
     },
-    "/fields/{id}/reviews": {
+    "/fields/{id}/review": {
       "get": {
         "tags": [
           "Field"
         ],
         "summary": "Get field's reviews",
         "description": "Role : CUSTOMER | ADMIN",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
         "parameters": [
           {
             "name": "id",
@@ -578,9 +563,7 @@
             "$ref": "#/components/responses/5xx"
           }
         }
-      }
-    },
-    "/fields/{id}/review": {
+      },
       "post": {
         "tags": [
           "Field"
@@ -638,11 +621,6 @@
       "get": {
         "tags": [
           "Field"
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          }
         ],
         "description": "Role : CUSTOMER | ADMIN",
         "summary": "Get booked schedules",

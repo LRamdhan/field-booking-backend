@@ -1,9 +1,13 @@
 import supertest from 'supertest'
 import { app } from './../src/config/expressConfig.js'
 import UserTemp from './../src/model/mongodb/userTempModel.js'
-import { closeServer, createTempUser, deleteAllSessionInRedis, deleteSessionInRedis, login } from './test-utils.js'
+import { closeServer, createTempUser, deleteAllSessionInRedis, login, openServer } from './test-utils.js'
 import User from './../src/model/mongodb/userModel.js'
 import EXISTING_USER from './../src/constant/user.js'
+
+beforeAll(async () => {
+  await openServer()
+})
 
 afterAll(async () => {
   await closeServer()
