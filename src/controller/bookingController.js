@@ -31,7 +31,9 @@ const bookingController = {
       // check if schedule in redis already exists, if it does -> throw error (current)
       const schduleMilis = (new Date(body.schedule)).getTime()
       const booked = await bookedScheduleRepository.search()
-        .where('schedule').eq(schduleMilis).return.all()
+        .where('schedule').eq(schduleMilis)
+        .and('field_id').eq(body.field_id)
+        .return.all()
       if(booked.length > 0) {
         throw new DatabaseError('Schedule already exists', 409)
       }
@@ -100,22 +102,33 @@ const bookingController = {
         currency: req.body.currency,
       }
 
-      // update fields in mongodb
-      const updatedBooking = {
-        merchant_id: paymentInfo.merchant_id,
-        payment_type: paymentInfo.payment_type,
-        payment_status: paymentInfo.payment_status,
-        transaction_time: paymentInfo.transaction_time,
-        expiry_time: paymentInfo.expiry_time,
-        currency: paymentInfo.currency,
+      if(paymentInfo.payment_status === 'deny' || paymentInfo.payment_status === 'cancel' || paymentInfo.payment_status === 'expire' || paymentInfo.payment_status === 'expire') {
+        // delete booking in mongodb and redis
+        const deletedBooking = await Booking.findOneAndDelete({
+          payment_id: paymentInfo.payment_id
+        })
+        const cachedSchdule = await bookedScheduleRepository.search()
+          .where('id').match(deletedBooking._id)
+          .return.all()
+        await bookedScheduleRepository.remove(cachedSchdule[0][EntityId])
+      } else {
+        // update fields in mongodb
+        const updatedBooking = {
+          merchant_id: paymentInfo.merchant_id,
+          payment_type: paymentInfo.payment_type,
+          payment_status: paymentInfo.payment_status,
+          transaction_time: paymentInfo.transaction_time,
+          expiry_time: paymentInfo.expiry_time,
+          currency: paymentInfo.currency,
+        }  
+        if(paymentInfo.payment_status === 'settlement' && paymentInfo.payment_status === 'capture') {
+          updatedBooking.status = 'aktif'
+        }
+        const booking = await Booking.findOneAndUpdate({
+          payment_id: paymentInfo.payment_id
+        }, updatedBooking)
       }
-      if(paymentInfo.payment_status === 'settlement') {
-        updatedBooking.status = 'aktif'
-      }
-      const booking = await Booking.findOneAndUpdate({
-        payment_id: paymentInfo.payment_id
-      }, updatedBooking)
-
+      
       // response
       return responseApi.success(res, {})
     } catch(err) {
@@ -146,22 +159,27 @@ const bookingController = {
         .limit(queries.limit)
         .skip(queries.limit * (queries.page -1))
         .populate('field_id', 'name images')
-        .select("_id schedule status payment_token")
+        .select("_id schedule status payment_token field_id isReviewed")
       bookings = bookings.map(e => ({
         id: e._id.toString(),
         field: {
+          id: e.field_id._id.toString(),
           name: e.field_id.name,
           img: e.field_id.images[0]
         },
         schedule: e.schedule,
         status: e.status,
+        isReviewed: e.isReviewed,
         payment_token: e.payment_token
       }))
+      const totalDocuments = await Booking.countDocuments(filter)
+      const totalPage = Math.ceil(totalDocuments / queries.limit)
 
       // response
       const response = {
         page: queries.page,
-        limit: queries.limit
+        limit: queries.limit,
+        total_page: totalPage
       }
       if(queries.status) response.status = queries.status
       if(queries.create_order) response.create_order = queries.create_order

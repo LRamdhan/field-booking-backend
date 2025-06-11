@@ -114,6 +114,8 @@ describe('POST /api/booking', () => {
         schedule: existingSchedule,
         payment_type: 'POA'
       })    
+
+    console.log(result.body);
     expect(result.status).toBe(409)
   })
 
@@ -235,11 +237,13 @@ describe('GET /api/bookings', () => {
     expect(result.status).toBe(200)
     expect(result.body.data.page).toBeDefined()
     expect(result.body.data.limit).toBeDefined()
+    expect(result.body.data.total_page).toBeDefined()
     for(const booking of result.body.data.bookings) {
       expect(booking.id).toBeDefined()
       expect(booking.field).toBeDefined()
       expect(booking.schedule).toBeDefined()
       expect(booking.status).toBeDefined()
+      expect(booking.isReviewed).toBeDefined()
     }
   })
 

@@ -35,9 +35,19 @@ server.use(errorHandler)
 
 // api docs
 let apiDocs = JSON.parse(fs.readFileSync('./api-docs.json'))
-server.use('/api-docs', swaggerUi.serve, swaggerUi.setup(apiDocs, {
-  customCss: '.swagger-ui .topbar { display: none }'
-}));
+server.use('/api-docs', swaggerUi.serve, (req, res, next) => {
+  const fullUrl = `${req.protocol}://${req.get('host')}/api`;
+  apiDocs.servers = [
+    {
+      url: fullUrl,
+      description: "Development Server"
+    }
+  ]
+  swaggerUi.setup(apiDocs, {
+    customCss: '.swagger-ui .topbar { display: none }'
+  })(req, res, next)
+});
+
 
 // express
 const app = http.createServer(server);

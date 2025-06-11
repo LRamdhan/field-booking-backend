@@ -115,7 +115,7 @@ const userController = {
 
   loginGoogle: (req, res, next) => {
     try {
-      res.redirect(authorizationUrl())
+      res.redirect(`${authorizationUrl()}${req.query?.from ? `&state=${encodeURIComponent(req.query.from)}` : ''}`)
     } catch(err) {
       next(new OauthError(err.message))
     }
@@ -155,7 +155,7 @@ const userController = {
       });
 
       // redirect
-      res.redirect(FRONTEND_BASE_URL)
+      res.redirect(req.query?.state ? FRONTEND_BASE_URL + req.query.state : FRONTEND_BASE_URL + '/dashboard')
     } catch(err) {
       next(new OauthError(err.message))
     }

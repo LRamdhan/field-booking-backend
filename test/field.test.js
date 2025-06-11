@@ -112,6 +112,13 @@ describe('POST /api/fields/:id/review', () => {
       },
       400
     ],
+    [
+      {
+        description: 'lorem ipsum dolor amet',
+        rating: 3
+      },
+      400
+    ],
   ]
 
   beforeAll(async () => {
@@ -147,6 +154,14 @@ describe('POST /api/fields/:id/review', () => {
         description: 'Bagus'
       })
     expect(result.status).toBe(404)
+  })
+
+  it('should return booking not found error', async () => {
+    
+  })
+  
+  it('should return booking is already reviewed error', async () => {
+
   })
 
   it('should return success', async () => {
@@ -219,9 +234,35 @@ describe('GET /api/fields/:id/review', () => {
       })
     expect(result.status).toBe(200)
     expect(result.body.data.page).toBeDefined()
+    expect(result.body.data.total_page).toBeDefined()
     expect(result.body.data.limit).toBeDefined()
     expect(result.body.data.average_rating).toBeDefined()
     expect(result.body.data.total_reviews).toBeDefined()
+    expect(result.body.data.reviews).toBeDefined()
+    for(const review of result.body.data.reviews) {
+      expect(review.id).toBeDefined()
+      expect(review.user).toBeDefined()
+      expect(review.rating).toBeDefined()
+      expect(review.description).toBeDefined()
+      expect(review.date_created).toBeDefined()
+    }
+  })
+
+  it('should return success with star', async () => {
+    const result = await supertest(app)
+      .get('/api/fields/' + fieldId + '/review')
+      .query({
+        page: 1,
+        limit: 5,
+        star: 4
+      })
+    expect(result.status).toBe(200)
+    expect(result.body.data.page).toBeDefined()
+    expect(result.body.data.total_page).toBeDefined()
+    expect(result.body.data.limit).toBeDefined()
+    expect(result.body.data.average_rating).toBeDefined()
+    expect(result.body.data.total_reviews).toBeDefined()
+    expect(result.body.data.star).toBeDefined()
     expect(result.body.data.reviews).toBeDefined()
     for(const review of result.body.data.reviews) {
       expect(review.id).toBeDefined()

@@ -520,10 +520,16 @@
                         "page": {
                           "type": "number"
                         },
+                        "total_page": {
+                          "type": "number"
+                        },
                         "average_rating": {
                           "type": "number"
                         },
                         "total_review": {
+                          "type": "number"
+                        },
+                        "star": {
                           "type": "number"
                         },
                         "reviews": {
@@ -591,6 +597,10 @@
               "schema": {
                 "type": "object",
                 "properties": {
+                  "booking_id": {
+                    "type": "string",
+                    "required": true
+                  },
                   "rating": {
                     "type": "number",
                     "required": true
@@ -834,6 +844,9 @@
                         "limit": {
                           "type": "number"
                         },
+                        "total_page": {
+                          "type": "number"
+                        },
                         "status": {
                           "type": "string",
                           "enum": ["pending", "aktif", "selesai"],
@@ -859,6 +872,9 @@
                               "field": {
                                 "type": "object",
                                 "properties": {
+                                  "id": {
+                                    "type": "string"
+                                  },
                                   "name": {
                                     "type": "string"
                                   },
@@ -874,6 +890,9 @@
                               "status": {
                                 "type": "string",
                                 "enum": ["pending", "aktif", "selesai"]
+                              },
+                              "isReviewed": {
+                                "type": "boolean"
                               },
                               "payment_token": {
                                 "type": "string",

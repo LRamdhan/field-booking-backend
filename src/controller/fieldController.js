@@ -1,4 +1,5 @@
 import DatabaseError from "../exception/DatabaseError.js"
+import Booking from "../model/mongodb/bookingModel.js"
 import Field from "../model/mongodb/fieldModel.js"
 import Review from "../model/mongodb/reviewsModel.js"
 import User from "../model/mongodb/userModel.js"
@@ -92,7 +93,7 @@ const fieldController = {
   createReview: async (req, res, next) => {
     try {
       // validate param and req body
-      const {field_id, rating, description} = validate(fieldValidation.createReview, {
+      const {field_id, booking_id, rating, description} = validate(fieldValidation.createReview, {
         field_id: req.params.id,
         ...req.body
       })
@@ -107,9 +108,25 @@ const fieldController = {
         throw new DatabaseError('Field not found', 404)
       }
 
+      // check if this booking is exists and already reviewed
+      const booking = await Booking.findOne({
+        _id: booking_id,
+        field_id: field_id
+      })
+      if(!booking) {
+        throw new DatabaseError('Booking not found', 404)
+      }
+      if(booking.isReviewed) {
+        throw new DatabaseError('Review already exists', 409)
+      }
+
+      // update booking isReviewed
+      await Booking.findByIdAndUpdate(booking_id, {isReviewed: true})
+
       // insert to review (mongodb)
       const review = await Review.create({
         field_id: field_id,
+        booking_id: booking_id,
         user_id: req.user_id,
         rating: rating,
         description: description
@@ -163,6 +180,22 @@ const fieldController = {
             .return.page(((data.page - 1) * data.limit), data.limit)
         }
       }
+
+      const totalPage = await (async (star) => {
+        let total
+        const reviews = await reviewRepository.search()
+          .where('field_id').equals(data.field_id)
+        if(star) {
+          total = await reviews.and('rating').eq(star)
+            .return.count()
+        } else {
+          total = await reviews
+            .return.count()
+        }
+        total = Math.ceil(total / data.limit)
+        return total
+      })(data.star)
+
       const cachedReviews = await (await getFilteredReviews(data.star))()
       const count = await reviewRepository.search()
         .where('field_id').equals(data.field_id)  
@@ -189,6 +222,7 @@ const fieldController = {
       // response
       const response = {
         page: data.page,
+        total_page: totalPage,
         limit: data.limit,
         average_rating: averageRating,
         total_reviews: count,
