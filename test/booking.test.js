@@ -1,8 +1,10 @@
-import { app } from "../src/config/expressConfig"
-import refreshTokenRepository from "../src/model/redis/refreshTokenRepository"
-import tokenRepository from "../src/model/redis/tokenRepository"
-import { clearDeletedBookings, closeServer, createBooking, deleteSessionInRedis, getExistingBooking, getField, login, restoreBookings } from "./test-utils"
+import { app } from "../src/config/expressConfig.js"
+import { clearDeletedBookings, closeServer, createBooking, deleteSessionInRedis, getExistingBooking, getField, login, openServer, restoreBookings } from "./test-utils.js"
 import supertest from "supertest"
+
+beforeAll(async () => {
+  await openServer()
+})
 
 afterAll(async () => {
   await closeServer()
@@ -112,6 +114,8 @@ describe('POST /api/booking', () => {
         schedule: existingSchedule,
         payment_type: 'POA'
       })    
+
+    console.log(result.body);
     expect(result.status).toBe(409)
   })
 
@@ -233,11 +237,13 @@ describe('GET /api/bookings', () => {
     expect(result.status).toBe(200)
     expect(result.body.data.page).toBeDefined()
     expect(result.body.data.limit).toBeDefined()
+    expect(result.body.data.total_page).toBeDefined()
     for(const booking of result.body.data.bookings) {
       expect(booking.id).toBeDefined()
       expect(booking.field).toBeDefined()
       expect(booking.schedule).toBeDefined()
       expect(booking.status).toBeDefined()
+      expect(booking.isReviewed).toBeDefined()
     }
   })
 
@@ -285,6 +291,7 @@ describe('GET /api/bookings/:id', () => {
     expect(data.created_date).toBeDefined()
     expect(data.schedule).toBeDefined()
     expect(data.payment_type).toBeDefined()
+    expect(data.is_reviewed).toBeDefined()
     expect(data.total).toBeDefined()
     expect(data.field).toBeDefined()
     expect(data.field.id).toBeDefined()

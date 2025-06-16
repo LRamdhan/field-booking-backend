@@ -9,7 +9,7 @@ import EXISTING_USER from '../src/constant/user.js';
 import Review from '../src/model/mongodb/reviewsModel.js';
 import reviewRepository from '../src/model/redis/reviewRepository.js';
 import mongoose from 'mongoose';
-import { redisClient } from '../src/config/redisConfig.js';
+import { connectRedis, redisClient } from '../src/config/redisConfig.js';
 import Booking from '../src/model/mongodb/bookingModel.js';
 import bookedScheduleRepository from '../src/model/redis/bookedScheduleRepository.js';
 import User from '../src/model/mongodb/userModel.js';
@@ -18,6 +18,7 @@ import { generateRefreshToken, generateToken } from '../src/utils/jwtHelper.js';
 import { ACCESS_TOKEN_EXPIRE_MINUTE, REFRESH_TOKEN_EXPIRE_DAY } from '../src/config/env.js';
 import { DateTime } from 'luxon';
 import generateRandomString from '../src/utils/generateRandomString.js';
+import connectMongoDb from "../src/config/mongodb.js";
 
 export const createTempUser= async () => {
   return await UserTemp.create({
@@ -139,6 +140,11 @@ export const closeServer = async () => {
     // disconnect db
     await mongoose.disconnect()
     await redisClient.quit()
+}
+
+export const openServer = async () => {
+  await connectMongoDb(true)
+  await connectRedis(true)
 }
 
 export const getExistingBooking = async (fieldId) => {

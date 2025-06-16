@@ -321,11 +321,6 @@
         ],
         "summary": "Get all fields",
         "description": "Role : CUSTOMER | ADMIN",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
         "responses": {
           "200": {
             "content": {
@@ -384,11 +379,6 @@
         ],
         "summary": "Get field by id",
         "description": "Role : CUSTOMER | ADMIN",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
         "parameters": [
           {
             "name": "id",
@@ -470,18 +460,13 @@
         }
       }
     },
-    "/fields/{id}/reviews": {
+    "/fields/{id}/review": {
       "get": {
         "tags": [
           "Field"
         ],
         "summary": "Get field's reviews",
         "description": "Role : CUSTOMER | ADMIN",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
         "parameters": [
           {
             "name": "id",
@@ -535,10 +520,16 @@
                         "page": {
                           "type": "number"
                         },
+                        "total_page": {
+                          "type": "number"
+                        },
                         "average_rating": {
                           "type": "number"
                         },
                         "total_review": {
+                          "type": "number"
+                        },
+                        "star": {
                           "type": "number"
                         },
                         "reviews": {
@@ -578,9 +569,7 @@
             "$ref": "#/components/responses/5xx"
           }
         }
-      }
-    },
-    "/fields/{id}/review": {
+      },
       "post": {
         "tags": [
           "Field"
@@ -608,6 +597,10 @@
               "schema": {
                 "type": "object",
                 "properties": {
+                  "booking_id": {
+                    "type": "string",
+                    "required": true
+                  },
                   "rating": {
                     "type": "number",
                     "required": true
@@ -638,11 +631,6 @@
       "get": {
         "tags": [
           "Field"
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          }
         ],
         "description": "Role : CUSTOMER | ADMIN",
         "summary": "Get booked schedules",
@@ -856,6 +844,9 @@
                         "limit": {
                           "type": "number"
                         },
+                        "total_page": {
+                          "type": "number"
+                        },
                         "status": {
                           "type": "string",
                           "enum": ["pending", "aktif", "selesai"],
@@ -881,6 +872,9 @@
                               "field": {
                                 "type": "object",
                                 "properties": {
+                                  "id": {
+                                    "type": "string"
+                                  },
                                   "name": {
                                     "type": "string"
                                   },
@@ -896,6 +890,9 @@
                               "status": {
                                 "type": "string",
                                 "enum": ["pending", "aktif", "selesai"]
+                              },
+                              "isReviewed": {
+                                "type": "boolean"
                               },
                               "payment_token": {
                                 "type": "string",
@@ -972,6 +969,10 @@
                         "created_date": {
                           "type": "number",
                           "description": "Epoch time in miliseconds, including time"
+                        },
+                        "is_reviewed": {
+                          "type": "boolean",
+                          "description": "Whether the booking has been reviewed or not"
                         },
                         "schedule": {
                           "type": "number",

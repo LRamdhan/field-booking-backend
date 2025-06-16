@@ -9,7 +9,8 @@ const fieldValidation = {
 
   createReview: Joi.object({
     field_id: Joi.string().min(24).trim().required(),
-    rating: Joi.number().min(1).max(5).required(),
+    booking_id: Joi.string().min(24).trim().required(),
+    rating: Joi.number().min(0).max(5).required(),
     description: Joi.string().min(1).trim().required(),
   }),
 

@@ -5,10 +5,10 @@ import ROLES from '../constant/roles.js'
 
 const fieldRoutes = express.Router()
 
-fieldRoutes.get('/', checkToken(ROLES.ADMIN, ROLES.CUSTOMER), fieldController.getFields)
-fieldRoutes.get('/:id', checkToken(ROLES.ADMIN, ROLES.CUSTOMER), fieldController.getFieldDetail)
-fieldRoutes.get('/:id/schedules', checkToken(ROLES.ADMIN, ROLES.CUSTOMER), fieldController.getSchedules)
+fieldRoutes.get('/', fieldController.getFields)
+fieldRoutes.get('/:id', fieldController.getFieldDetail)
+fieldRoutes.get('/:id/schedules', fieldController.getSchedules)
 fieldRoutes.post('/:id/review', checkToken(ROLES.CUSTOMER), fieldController.createReview)
-fieldRoutes.get('/:id/review', checkToken(ROLES.CUSTOMER, ROLES.ADMIN), fieldController.getReview)
+fieldRoutes.get('/:id/review', fieldController.getReview)
 
 export default fieldRoutes

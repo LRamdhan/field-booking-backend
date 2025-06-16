@@ -21,6 +21,10 @@ const bookingSchema = new mongoose.Schema({
     default: 'pending',
     required: [true, 'Status is required'],
   },
+  isReviewed: {
+    type: Boolean,
+    default: false
+  },
   payment_id: {
     type: String,
   },
