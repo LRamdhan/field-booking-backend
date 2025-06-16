@@ -291,6 +291,7 @@ describe('GET /api/bookings/:id', () => {
     expect(data.created_date).toBeDefined()
     expect(data.schedule).toBeDefined()
     expect(data.payment_type).toBeDefined()
+    expect(data.is_reviewed).toBeDefined()
     expect(data.total).toBeDefined()
     expect(data.field).toBeDefined()
     expect(data.field.id).toBeDefined()

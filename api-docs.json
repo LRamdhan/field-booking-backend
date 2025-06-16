@@ -970,6 +970,10 @@
                           "type": "number",
                           "description": "Epoch time in miliseconds, including time"
                         },
+                        "is_reviewed": {
+                          "type": "boolean",
+                          "description": "Whether the booking has been reviewed or not"
+                        },
                         "schedule": {
                           "type": "number",
                           "description": "Epoch time in miliseconds, including time"

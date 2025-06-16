@@ -102,7 +102,7 @@ const bookingController = {
         currency: req.body.currency,
       }
 
-      if(paymentInfo.payment_status === 'deny' || paymentInfo.payment_status === 'cancel' || paymentInfo.payment_status === 'expire' || paymentInfo.payment_status === 'expire') {
+      if(paymentInfo.payment_status === 'deny' || paymentInfo.payment_status === 'cancel' || paymentInfo.payment_status === 'expire' || paymentInfo.payment_status === 'failure') {
         // delete booking in mongodb and redis
         const deletedBooking = await Booking.findOneAndDelete({
           payment_id: paymentInfo.payment_id
@@ -198,7 +198,7 @@ const bookingController = {
 
       // query booking based on user's id
       const booking = await Booking.findById(bookingId)
-        .select("_id payment_token status payment_type schedule createdAt")
+        .select("_id payment_token status payment_type schedule isReviewed createdAt")
         .populate("field_id", '_id name location images price')
 
       // if not found
@@ -213,6 +213,7 @@ const bookingController = {
         status: booking.status,
         created_date: booking.createdAt,
         schedule: booking.schedule,
+        is_reviewed: booking.isReviewed,
         payment_type: booking.payment_type,
         total: booking.field_id.price,
         field: {
@@ -270,8 +271,10 @@ const bookingController = {
       let cachedBooking = await bookedScheduleRepository.search()
         .where('id').match(deletedBooking._id.toString()).return.all()
       cachedBooking = cachedBooking[0]
-      const cachedBookingId = cachedBooking[EntityId]
-      await bookedScheduleRepository.remove(cachedBookingId)
+      if(cachedBooking) {
+        const cachedBookingId = cachedBooking[EntityId]
+        await bookedScheduleRepository.remove(cachedBookingId)
+      }
 
       // response
       return responseApi.success(res, {})
