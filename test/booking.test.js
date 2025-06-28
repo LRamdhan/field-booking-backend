@@ -341,3 +341,7 @@ describe('DELETE /api/bookings/:id', () => {
     expect(result.status).toBe(200)
   })
 })
+
+describe('PATCH /api/bookings/activate', () => {
+  
+})

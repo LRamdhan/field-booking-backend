@@ -10,6 +10,7 @@ import bookingValidation from "../validation/bookingValidation.js"
 import validate from "../validation/validate.js"
 import { EntityId } from 'redis-om'
 import generateRandomString from "./../utils/generateRandomString.js"
+import addFinishBookingJob from "./../utils/bookingUtils.js"
 
 const bookingController = {
   createBooking : async (req, res, next) => {
@@ -121,8 +122,12 @@ const bookingController = {
           expiry_time: paymentInfo.expiry_time,
           currency: paymentInfo.currency,
         }  
-        if(paymentInfo.payment_status === 'settlement' && paymentInfo.payment_status === 'capture') {
+        if(paymentInfo.payment_status === 'settlement' || paymentInfo.payment_status === 'capture') {
           updatedBooking.status = 'aktif'
+          const currentBooking = await Booking.findOne({
+            payment_id: paymentInfo.payment_id
+          })
+          addFinishBookingJob(currentBooking)
         }
         const booking = await Booking.findOneAndUpdate({
           payment_id: paymentInfo.payment_id
@@ -281,7 +286,42 @@ const bookingController = {
     } catch(err) {
       next(err)
     }
-  }
+  },
+
+  activateBooking: async (req, res, next) => {
+    try {
+      // validate id, if not valid -> response 400
+      const bookingId = validate(bookingValidation.activateBooking, req.params.id)
+
+      // check if booking exists, if doesn't - response 404
+      const booking = await Booking.findById(bookingId)
+      if(!booking) {
+        throw new DatabaseError('Booking not found', 404)
+      }
+
+      // check if booking status is 'pending', if not - response 400
+      if(booking.status !== 'pending') {
+        throw new DatabaseError('Booking status is not pending', 400)
+      }
+
+      // update booking's status to 'aktif'
+      await Booking.updateOne({
+        _id: bookingId
+      }, {
+        $set: {
+          status: 'aktif'
+        }
+      })
+
+      // update status to selesai once schedule is outdated
+      addFinishBookingJob(booking)
+
+      // response 200
+      return responseApi.success(res, {})
+    } catch(err) {
+      next(err)
+    }
+  }  
 }
 
 export default bookingController

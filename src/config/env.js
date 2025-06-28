@@ -2,7 +2,10 @@ import dotenv from 'dotenv'
 dotenv.config()
 
 const MONGODB_URL = process.env.MONGODB_URL
-const REDIS_URL = process.env.REDIS_URL
+const REDIS_HOST = process.env.REDIS_HOST
+const REDIS_USER = process.env.REDIS_USER
+const REDIS_PASSWORD = process.env.REDIS_PASSWORD
+const REDIS_PORT = process.env.REDIS_PORT
 const EMAIL_SERVICE = process.env.EMAIL_SERVICE
 const EMAIL_HOST = process.env.EMAIL_HOST
 const EMAIL_USER = process.env.EMAIL_USER
@@ -21,7 +24,10 @@ const REFRESH_TOKEN_EXPIRE_DAY = process.env.REFRESH_TOKEN_EXPIRE_DAY
 
 export {
   MONGODB_URL, 
-  REDIS_URL,
+  REDIS_HOST,
+  REDIS_USER,
+  REDIS_PASSWORD,
+  REDIS_PORT,
   EMAIL_SERVICE,
   EMAIL_HOST,
   EMAIL_USER,

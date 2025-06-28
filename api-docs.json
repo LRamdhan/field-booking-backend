@@ -21,8 +21,7 @@
         "tags": [
           "User"
         ],
-        "summary": "Register new user",
-        "description": "Role : CUSTOMER | ADMIN",
+        "summary": "Register new user | CUSTOMER",
         "requestBody": {
           "type": "object",
           "required": true,
@@ -101,7 +100,7 @@
         "tags": [
           "User"
         ],
-        "summary": "Login user",
+        "summary": "Login user | CUSTOMER & ADMIN",
         "requestBody": {
           "content": {
             "application/json": {
@@ -172,8 +171,8 @@
         "tags": [
           "User"
         ],
-        "summary": "Confirm registered account",
-        "description": "Role : CUSTOMER\n\nRequested from sent email",
+        "summary": "Confirm registered account | CUSTOMER",
+        "description": "Requested from sent email",
         "parameters": [
           {
             "name": "key",
@@ -213,8 +212,8 @@
         "tags": [
           "User"
         ],
-        "summary": "Login with Google",
-        "description": "Role : CUSTOMER | ADMIN\n\nRequested using link",
+        "summary": "Login with Google | CUSTOMER & ADMIN",
+        "description": "Requested using link",
         "responses": {
           "200": {
             "description": "Redirect to dashboard page"
@@ -230,8 +229,7 @@
         "tags": [
           "User"
         ],
-        "summary": "Logout user",
-        "description": "Role : CUSTOMER | ADMIN",
+        "summary": "Logout user | CUSTOMER & ADMIN",
         "security": [
           {
             "bearerAuth": []
@@ -255,8 +253,7 @@
         "tags": [
           "User"
         ],
-        "summary": "Get new access token",
-        "description": "Role : CUSTOMER | ADMIN",
+        "summary": "Get new access token | CUSTOMER & ADMIN",
         "requestBody": {
           "content": {
             "application/json": {
@@ -319,8 +316,7 @@
         "tags": [
           "Field"
         ],
-        "summary": "Get all fields",
-        "description": "Role : CUSTOMER | ADMIN",
+        "summary": "Get all fields | CUSTOMER & ADMIN",
         "responses": {
           "200": {
             "content": {
@@ -377,8 +373,7 @@
         "tags": [
           "Field"
         ],
-        "summary": "Get field by id",
-        "description": "Role : CUSTOMER | ADMIN",
+        "summary": "Get field by id  | CUSTOMER & ADMIN",
         "parameters": [
           {
             "name": "id",
@@ -465,8 +460,7 @@
         "tags": [
           "Field"
         ],
-        "summary": "Get field's reviews",
-        "description": "Role : CUSTOMER | ADMIN",
+        "summary": "Get field's reviews  | CUSTOMER & ADMIN",
         "parameters": [
           {
             "name": "id",
@@ -579,8 +573,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Create reviews",
-        "description": "Role : CUSTOMER",
+        "summary": "Create reviews | CUSTOMER",
         "parameters": [
           {
             "name": "id",
@@ -632,8 +625,7 @@
         "tags": [
           "Field"
         ],
-        "description": "Role : CUSTOMER | ADMIN",
-        "summary": "Get booked schedules",
+        "summary": "Get booked schedules | CUSTOMER & ADMIN",
         "parameters": [
           {
             "name": "id",
@@ -698,8 +690,7 @@
         "tags": [
           "Booking"
         ],
-        "summary": "Create new booking",
-        "description": "Role : CUSTOMER",
+        "summary": "Create new booking | CUSTOMER",
         "security": [
           {
             "bearerAuth": []
@@ -771,8 +762,7 @@
         "tags": [
           "Booking"
         ],
-        "summary": "Get customer's bookings",
-        "description": "Role : CUSTOMER",
+        "summary": "Get customer's bookings | CUSTOMER",
         "security": [
           {
             "bearerAuth": []
@@ -922,8 +912,7 @@
         "tags": [
           "Booking"
         ],
-        "summary": "Get detail booking",
-        "description": "Role : CUSTOMER",
+        "summary": "Get detail booking | CUSTOMER",
         "security": [
           {
             "bearerAuth": []
@@ -1025,8 +1014,7 @@
         "tags": [
           "Booking"
         ],
-        "summary": "Cancel Booking",
-        "description": "Role : CUSTOMER",
+        "summary": "Cancel Booking | CUSTOMER",
         "security": [
           {
             "bearerAuth": []
@@ -1060,7 +1048,7 @@
         "tags": [
           "Booking"
         ],
-        "summary": "Update booking's payment",
+        "summary": "Update booking's payment | by midtrans",
         "description": "Requested by midtrans",
         "requestBody": {
           "content": {
@@ -1085,6 +1073,30 @@
             }
           }
         },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/200"
+          },
+          "4xx": {
+            "$ref": "#/components/responses/4xx"
+          },
+          "5xx": {
+            "$ref": "#/components/responses/5xx"
+          }
+        }
+      }
+    },
+    "/bookings/{id}/activate": {
+      "patch": {
+        "tags": [
+          "Booking"
+        ],
+        "summary": "Update booking's status to aktif | ADMIN",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "$ref": "#/components/responses/200"

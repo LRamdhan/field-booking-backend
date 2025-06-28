@@ -19,6 +19,8 @@ const bookingValidation = {
   detailBooking: Joi.string().min(24).trim().required(),
   
   deleteBooking: Joi.string().min(24).trim().required(),
+
+  activateBooking: Joi.string().min(24).trim().required(),
 }
 
 export default bookingValidation

@@ -10,5 +10,6 @@ bookingRoutes.post('/update', bookingController.updateTransaction)
 bookingRoutes.get('/', checkToken(ROLES.CUSTOMER), bookingController.getBookings)
 bookingRoutes.get('/:id', checkToken(ROLES.CUSTOMER), bookingController.getDetailBooking)
 bookingRoutes.delete('/:id', checkToken(ROLES.CUSTOMER), bookingController.deleteBooking)
+bookingRoutes.patch('/:id/activate', checkToken(ROLES.ADMIN), bookingController.activateBooking)
 
 export default bookingRoutes
