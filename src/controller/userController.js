@@ -5,7 +5,7 @@ import User from "./../model/mongodb/userModel.js"
 import DatabaseError from "./../exception/DatabaseError.js"
 import UserTemp from "./../model/mongodb/userTempModel.js"
 import ROLES from "./../constant/roles.js"
-import sendConfirmEmail from "./../utils/email.js"
+import { sendConfirmEmail } from "./../utils/email.js"
 import ValidationError from "./../exception/ValidationError.js"
 import fs from 'fs/promises'
 import { authorizationUrl } from "./../config/googleAuth.js"

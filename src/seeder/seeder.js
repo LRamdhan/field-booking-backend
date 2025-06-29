@@ -118,24 +118,26 @@ const createBookings = async (users, fields) => {
     {
       user_id: users[0],
       field_id: fields[0]._id,
-      schedule: (DateTime.fromObject({year: 2025, month: 5, day: 22, hour: 17 }, { zone: 'Asia/Jakarta', numberingSystem: 'beng'})).toMillis()
-      ,
+      schedule: (DateTime.fromObject({year: 2025, month: 5, day: 22, hour: 17 }, { zone: 'Asia/Jakarta', numberingSystem: 'beng'})).toMillis(),
       status: 'pending',
-      payment_type: PAYMENT.POA
+      payment_type: PAYMENT.POA,
+      reminder_id: '10' // doesn't exist in bullmq's redis
     },
     {
       user_id: users[1],
       field_id: fields[1]._id,
       schedule: (DateTime.fromObject({year: 2025, month: 5, day: 25, hour: 21 }, { zone: 'Asia/Jakarta', numberingSystem: 'beng'})).toMillis(),
       status: 'pending',
-      payment_type: PAYMENT.POA
+      payment_type: PAYMENT.POA,
+      reminder_id: '11' // doesn't exist in bullmq's redis
     },
     {
       user_id: users[1],
       field_id: fields[2]._id,
       schedule: (DateTime.fromObject({year: 2025, month: 5, day: 17, hour: 9 }, { zone: 'Asia/Jakarta', numberingSystem: 'beng'})).toMillis(),
       status: 'pending',
-      payment_type: PAYMENT.POA
+      payment_type: PAYMENT.POA,
+      reminder_id: '11' // doesn't exist in bullmq's redis
     },
   ])
 }

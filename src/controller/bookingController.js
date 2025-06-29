@@ -10,7 +10,7 @@ import bookingValidation from "../validation/bookingValidation.js"
 import validate from "../validation/validate.js"
 import { EntityId } from 'redis-om'
 import generateRandomString from "./../utils/generateRandomString.js"
-import addFinishBookingJob from "./../utils/bookingUtils.js"
+import { addFinishBookingJob, addReminderBookingJob, removeReminderBookingJob } from "../utils/jobUtils.js"
 
 const bookingController = {
   createBooking : async (req, res, next) => {
@@ -39,12 +39,19 @@ const bookingController = {
         throw new DatabaseError('Schedule already exists', 409)
       }
 
+      // add reminder booking job
+      const remindJobId = await addReminderBookingJob(req.user_email, schduleMilis, {
+        field_id: field._id,
+        payment_type: body.payment_type,
+      })
+
       const bookingData = {
         user_id: req.user_id,
         field_id: field._id,
         schedule: schduleMilis,
         status: 'pending',
-        payment_type: body.payment_type
+        payment_type: body.payment_type,
+        reminder_id: remindJobId
       }
 
       // if payment_type is ONLINE, register payment to midtrans
@@ -127,7 +134,7 @@ const bookingController = {
           const currentBooking = await Booking.findOne({
             payment_id: paymentInfo.payment_id
           })
-          addFinishBookingJob(currentBooking)
+          await addFinishBookingJob(currentBooking)
         }
         const booking = await Booking.findOneAndUpdate({
           payment_id: paymentInfo.payment_id
@@ -240,7 +247,7 @@ const bookingController = {
       // validate booking id
       const bookingId = validate(bookingValidation.deleteBooking, req.params.id)
 
-      // delete on booking, status must be 'pending'
+      // status must be 'pending'
       const deletedBooking = await Booking.findOne({
         _id: bookingId,
         status: 'pending',
@@ -249,6 +256,13 @@ const bookingController = {
       if(!deletedBooking) {
         throw new DatabaseError('Booking not found', 404)
       }
+
+      // delete job if exists
+      if(deletedBooking.reminder_id) {
+        await removeReminderBookingJob(deletedBooking.reminder_id)
+      }
+
+      // delete booking
       await Booking.findByIdAndDelete(deletedBooking._id)
 
       // insert to deleted booking
@@ -314,7 +328,7 @@ const bookingController = {
       })
 
       // update status to selesai once schedule is outdated
-      addFinishBookingJob(booking)
+      await addFinishBookingJob(booking)
 
       // response 200
       return responseApi.success(res, {})

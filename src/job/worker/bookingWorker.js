@@ -1,12 +1,12 @@
 import { Worker } from 'bullmq';
 import redisConnection from '../../config/redisConnection.js';
 import Booking from '../../model/mongodb/bookingModel.js';
+import { sendReminderEmail } from '../../utils/email.js';
 
 const runBookingWorker = () => {
   const bookingWorker = new Worker('booking', async job => {
     try {      
-      if(job.name === 'FINISH_BOOKING') {
-        // update status booking to selesai
+      if(job.name === 'FINISH_BOOKING') { // update status booking to selesai
         await Booking.updateOne({
           _id: job.data.bookingId
         }, {
@@ -14,6 +14,8 @@ const runBookingWorker = () => {
             status: 'selesai'
           }
         })
+      } else if(job.name === 'REMIND_BOOKING') { // send email reminder
+        sendReminderEmail(job.data)
       }
     } catch(err) {
       console.log(err.message);
