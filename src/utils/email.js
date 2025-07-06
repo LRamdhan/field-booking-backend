@@ -16,6 +16,7 @@ const transporter = nodemailer.createTransport({
 
 const confirmEmailUrl = BASE_URL + "/api/users/email/confirm"
 let template = (fs.readFileSync('./src/view/email-confirm.html')).toString()
+let templateReminder = (fs.readFileSync('./src/view/booking-reminder.html')).toString()
   
 const mailOptions = (destinationEmail, key) => ({
   from: `FieldBooking <${EMAIL_USER}>`,
@@ -30,4 +31,25 @@ const sendConfirmEmail = async (destinationEmail, key) => {
   return result
 }
 
-export default sendConfirmEmail
+const sendReminderEmail = async (data) => {
+  const attachedData = {
+    tanggal: data.date,
+    jam: data.time,
+    namaLapang: data.namaLapang,
+    hargaLapang: data.hargaLapang,
+    paymentType: data.paymentType,
+  }
+
+  const mailOptions = {
+    from: `FieldBooking <${EMAIL_USER}>`,
+    to: data.userEmail,
+    subject: "Booking Reminder",
+    html: mustache.render(templateReminder, attachedData),
+    amp: mustache.render(templateReminder, attachedData),
+  }
+
+  const result = await transporter.sendMail(mailOptions);
+  return result
+}
+
+export { sendConfirmEmail, sendReminderEmail }

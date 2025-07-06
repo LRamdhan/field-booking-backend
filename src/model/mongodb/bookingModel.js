@@ -50,6 +50,9 @@ const bookingSchema = new mongoose.Schema({
   currency: {
     type: String,
   },
+  reminder_id: {
+    type: String,
+  },
 },  {
   timestamps: true
 })

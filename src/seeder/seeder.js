@@ -17,6 +17,7 @@ import reviewRepository from "../model/redis/reviewRepository.js";
 import { DateTime } from "luxon";
 import PAYMENT from "../constant/payment.js";
 import DeletedBooking from "../model/mongodb/deletedBookingModel.js";
+import redisConnection from "../config/redisConnection.js";
 
 const createUsers = async () => {
   const users = await User.create([
@@ -39,6 +40,16 @@ const createUsers = async () => {
       role: ROLES.CUSTOMER,
       email: 'kurniawan@gmail.com',
       password: await bcrypt.hash('empatlima45', 12),
+    },
+    {
+      name: 'Samsul Samsudin',
+      city: 'Sumedang',
+      district: 'Cisitu',
+      sub_district: 'Ujung Jaya',
+      img_url: "https://avatar.iran.liara.run/public/32",
+      role: ROLES.ADMIN,
+      email: 'samsul@gmail.com',
+      password: await bcrypt.hash('lahkok3456', 12),
     },
   ])
   return users.map(e => e._id)
@@ -107,57 +118,50 @@ const createBookings = async (users, fields) => {
     {
       user_id: users[0],
       field_id: fields[0]._id,
-      schedule: (DateTime.fromObject({year: 2025, month: 5, day: 22, hour: 17 }, { zone: 'Asia/Jakarta', numberingSystem: 'beng'})).toMillis()
-      ,
+      schedule: (DateTime.fromObject({year: 2025, month: 5, day: 22, hour: 17 }, { zone: 'Asia/Jakarta', numberingSystem: 'beng'})).toMillis(),
       status: 'pending',
-      payment_type: PAYMENT.POA
+      payment_type: PAYMENT.POA,
+      reminder_id: '10' // doesn't exist in bullmq's redis
     },
     {
       user_id: users[1],
       field_id: fields[1]._id,
       schedule: (DateTime.fromObject({year: 2025, month: 5, day: 25, hour: 21 }, { zone: 'Asia/Jakarta', numberingSystem: 'beng'})).toMillis(),
       status: 'pending',
-      payment_type: PAYMENT.POA
+      payment_type: PAYMENT.POA,
+      reminder_id: '11' // doesn't exist in bullmq's redis
     },
     {
       user_id: users[1],
       field_id: fields[2]._id,
       schedule: (DateTime.fromObject({year: 2025, month: 5, day: 17, hour: 9 }, { zone: 'Asia/Jakarta', numberingSystem: 'beng'})).toMillis(),
       status: 'pending',
-      payment_type: PAYMENT.POA
+      payment_type: PAYMENT.POA,
+      reminder_id: '11' // doesn't exist in bullmq's redis
     },
   ])
 }
 
-const createReviews = async (users, fields) => {
+const createReviews = async (bookings) => {
   return await Review.create([
     {
-      field_id: fields[0]._id,
-      user_id: users[0],
+      field_id: bookings[0].field_id,
+      user_id: bookings[0].user_id,
+      booking_id: bookings[0]._id,
       rating: 4,
       description: 'Lapangnya bagus'
     },
     {
-      field_id: fields[0]._id,
-      user_id: users[1],
-      rating: 5,
-      description: 'Lumayan'
-    },
-    {
-      field_id: fields[1]._id,
-      user_id: users[1],
+      field_id: bookings[1].field_id,
+      user_id: bookings[1].user_id,
+      booking_id: bookings[1]._id,
       rating: 2,
       description: 'Ada bagian yang lecet'
     },
     {
-      field_id: fields[2]._id,
-      user_id: users[0],
-      rating: 3,
-      description: 'Sesuai harga'
-    },
-    {
-      field_id: fields[2]._id,
-      user_id: users[1],
+      field_id: bookings[2].field_id,
+      user_id: bookings[2].user_id,
+      booking_id: bookings[2]._id,
       rating: 4,
       description: 'Cukup oke'
     }
@@ -242,6 +246,13 @@ const createRedisIndex = async () => {
   await reviewRepository.createIndex();
 }
 
+const resetJobInRedis = () => {
+  const stream = redisConnection.scanStream('bull*');
+  stream.on('data', (keys) => {
+    redisConnection.del(keys);
+  });
+}
+
 (async () => {
   try {
     // connect mongodb
@@ -262,7 +273,7 @@ const createRedisIndex = async () => {
     console.log('New fields is inserted');
     const bookings = await createBookings(users, fields)
     console.log('New bookings is inserted');
-    const reviews = await createReviews(users, fields)
+    const reviews = await createReviews(bookings)
     console.log('New reviews is inserted');
 
     // connect redis
@@ -270,6 +281,7 @@ const createRedisIndex = async () => {
 
     // delete all redis
     await resetRedis()
+    resetJobInRedis()
     console.log('Redis is clear');
 
     // create redis index
