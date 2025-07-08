@@ -109,11 +109,13 @@
                 "properties": {
                   "email": {
                     "type": "string",
-                    "required": true
+                    "required": true,
+                    "example": "luji@gmail.com"
                   },
                   "password": {
                     "type": "string",
-                    "required": true
+                    "required": true,
+                    "example": "satudua12"
                   }
                 }
               }        
@@ -297,6 +299,164 @@
                   "message": "Success",
                   "data": {
                     "access_token": "loremipsomdoloramet"
+                  }
+                }
+              }
+            }
+          },
+          "4xx": {
+            "$ref": "#/components/responses/4xx"
+          },
+          "5xx": {
+            "$ref": "#/components/responses/5xx"
+          }
+        }
+      }
+    },
+    "/users": {
+      "get": {
+        "tags": [
+          "User"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get user's profile | CUSTOMER & ADMIN",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Success"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "example": "John Doe"
+                        },
+                        "email": {
+                          "type": "string",
+                          "example": "s6m0X@example.com"
+                        },
+                        "img_url": {
+                          "type": "string",
+                          "example": "https://example.com/image.jpg"
+                        },
+                        "city": {
+                          "type": "string",
+                          "example": "Jakarta"
+                        },
+                        "district": {
+                          "type": "string",
+                          "example": "Jakarta Barat"
+                        },
+                        "sub_district": {
+                          "type": "string",
+                          "example": "Duren Sawit"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "4xx": {
+            "$ref": "#/components/responses/4xx"
+          },
+          "5xx": {
+            "$ref": "#/components/responses/5xx"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "User"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Update user's profile | CUSTOMER & ADMIN",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "img": {
+                    "type": "file"
+                  },
+                  "city": {
+                    "type": "string"
+                  },
+                  "district": {
+                    "type": "string"
+                  },
+                  "sub_district": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Success"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "example": "John Doe"
+                        },
+                        "img_url": {
+                          "type": "string",
+                          "example": "https://example.com/image.jpg"
+                        },
+                        "city": {
+                          "type": "string",
+                          "example": "Jakarta"
+                        },
+                        "district": {
+                          "type": "string",
+                          "example": "Jakarta Barat"
+                        },
+                        "sub_district": {
+                          "type": "string",
+                          "example": "Duren Sawit"
+                        }
+                      }
+                    }
                   }
                 }
               }

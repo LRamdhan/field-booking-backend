@@ -12,5 +12,6 @@ userRoutes.get('/oauth/google', userController.processGoogleLogin)
 userRoutes.post('/login', userController.login)
 userRoutes.delete('/logout', checkToken(ROLES.ADMIN, ROLES.CUSTOMER), userController.logout)
 userRoutes.post('/refresh-token', userController.refreshToken)
+userRoutes.get('/', checkToken(ROLES.ADMIN, ROLES.CUSTOMER), userController.getProfile)
 
 export default userRoutes

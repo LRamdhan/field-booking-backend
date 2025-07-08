@@ -258,6 +258,28 @@ const userController = {
     } catch(err) {
       next(err)
     }
+  },
+
+  getProfile: async (req, res, next) => {
+    try {
+      // get user profile
+      const user = await User.findById(req.user_id)
+        .select('name email img_url city district sub_district')
+
+      const responseContent = {
+        name: user.name,
+        email: user.email,
+        img_url: user.img_url,
+        city: user.city,
+        district: user.district,
+        sub_district: user.sub_district
+      }
+
+      // response
+      responseApi.success(res, responseContent)
+    } catch(err) {
+      next(err)
+    }
   }
 }
 
