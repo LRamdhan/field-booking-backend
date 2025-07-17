@@ -280,6 +280,43 @@ const userController = {
     } catch(err) {
       next(err)
     }
+  },
+
+  updateProfile: async (req, res, next) => {
+    try {
+      // validate
+      const payload = validate(userValidation.updateProfile, req.body)
+      
+      // update user in mongodb
+      const newField = {}
+      if(payload.name) {
+        newField.name = payload.name
+      }
+      if(payload.city) {
+        newField.city = payload.city
+      }
+      if(payload.district) {
+        newField.district = payload.district
+      }
+      if(payload.sub_district) {
+        newField.sub_district = payload.sub_district
+      }
+      if(req.file) {
+        newField.img_url = req.file.path;
+      }
+      const updatedUser = await User.findByIdAndUpdate(req.user_id, newField, { new: true })
+      
+      // response
+      return responseApi.success(res, {
+        name: updatedUser.name,
+        img_url: updatedUser.img_url,
+        city: updatedUser.city,
+        district: updatedUser.district,
+        sub_district: updatedUser.sub_district
+      })
+    } catch(err) {
+      next(err)
+    }
   }
 }
 

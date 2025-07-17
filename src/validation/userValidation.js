@@ -19,6 +19,13 @@ const userValidation = {
     refresh_token: Joi.string().min(10).trim().required(),
   }),
 
+  updateProfile: Joi.object({
+    name: Joi.string().max(100).min(1).trim(),
+    city: Joi.string().max(100).min(1).trim(),
+    district: Joi.string().max(100).min(1).trim(),
+    sub_district: Joi.string().max(100).min(1).trim(),
+  }),
+
 }
 
 export default userValidation
