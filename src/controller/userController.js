@@ -21,6 +21,7 @@ import { wsServer } from "../config/expressConfig.js"
 import jwt from 'jsonwebtoken'
 import { createSession } from "../utils/session.js"
 import generateRandomString from "../utils/generateRandomString.js"
+import dayjs from "dayjs"
 
 const userController = {
   register: async (req, res, next) => {
@@ -314,6 +315,72 @@ const userController = {
         district: updatedUser.district,
         sub_district: updatedUser.sub_district
       })
+    } catch(err) {
+      next(err)
+    }
+  },
+
+  getDevices: async (req, res, next) => {
+    try {
+      // get devices(refresh token) from redis
+      let devices = await refreshTokenRepository.search()
+        .where('user_id').equals(req.user_id)
+        .return.all()
+
+      devices = devices.map(e => {
+        const last_login = dayjs(e.created_at).format('DD MMMM YYYY, HH:mm:ss');
+        return {
+          id: e.id,
+          last_login,
+          os: e.os,
+          device: e.device,
+          platform: e.platform,
+          browser: e.browser
+        }
+      })
+
+      // response
+      return responseApi.success(res, devices)
+    } catch(err) {
+      next(err)
+    }
+  },
+
+  deleteDevice: async (req, res, next) => {
+    try {
+      // validate id
+      const refreshTokenId = validate(userValidation.deleteDevice, req.params.id)
+
+      // if id is current token -> throw error
+      const token = req.headers.authorization.split(' ')[1];
+      const currentAccessToken = await tokenRepository.search()
+        .where('token').equals(token)
+        .return.all()
+      const currentAccessTokenId = currentAccessToken[0].id
+      let desiredRefreshToken = await refreshTokenRepository.search()
+        .where('id').match(refreshTokenId)
+        .return.all()
+      desiredRefreshToken = desiredRefreshToken[0]
+      if(desiredRefreshToken.access_token_id === currentAccessTokenId) {
+        throw new DatabaseError('You can not delete your current device', 400)
+      }
+
+      // delete refresh token and all related access token in redis
+      const allUserAccessToken = await tokenRepository.search()
+        .where('user_id').equals(req.user_id)
+        .return.all()
+      const allUserRefreshToken = await refreshTokenRepository.search()
+        .where('user_id').equals(req.user_id)
+        .return.all()
+      for(const token of allUserAccessToken) {
+        await tokenRepository.remove(token[EntityId])
+      }
+      for(const token of allUserRefreshToken) {
+        await refreshTokenRepository.remove(token[EntityId])
+      }
+
+      // response
+      return responseApi.success(res, {})
     } catch(err) {
       next(err)
     }

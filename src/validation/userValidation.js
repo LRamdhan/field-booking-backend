@@ -26,6 +26,7 @@ const userValidation = {
     sub_district: Joi.string().max(100).min(1).trim(),
   }),
 
+  deleteDevice: Joi.string().min(25).trim().required(),
 }
 
 export default userValidation

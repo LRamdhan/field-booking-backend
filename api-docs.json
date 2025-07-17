@@ -471,6 +471,121 @@
         }
       }
     },
+    "/users/devices": {
+      "get": {
+        "tags": [
+          "User"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get user's devices | CUSTOMER & ADMIN",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Success"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "example": "1"
+                          },
+                          "last_login": {
+                            "type": "string",
+                            "example": "07-07-2025 11.00"
+                          },
+                          "os": {
+                            "type": "string",
+                            "example": "Window 10.0"
+                          },
+                          "device": {
+                            "type": "string",
+                            "example": "Desktop"
+                          },
+                          "platform": {
+                            "type": "string",
+                            "example": "Microsoft Windows"
+                          },
+                          "browser": {
+                            "type": "string",
+                            "example": "Chrome"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "4xx": {
+            "$ref": "#/components/responses/4xx"
+          },
+          "5xx": {
+            "$ref": "#/components/responses/5xx"
+          }
+        }
+      }
+    },
+    "/users/devices/{id}": {
+      "delete": {
+        "tags": [
+          "User"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Delete user's device | CUSTOMER & ADMIN",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Success"
+                    },
+                    "data": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "4xx": {
+            "$ref": "#/components/responses/4xx"
+          },
+          "5xx": {
+            "$ref": "#/components/responses/5xx"
+          }
+        }
+      }
+    },
     "/fields": {
       "get": {
         "tags": [

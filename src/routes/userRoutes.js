@@ -12,8 +12,10 @@ userRoutes.get('/login/google', userController.loginGoogle)
 userRoutes.get('/oauth/google', userController.processGoogleLogin)
 userRoutes.post('/login', userController.login)
 userRoutes.delete('/logout', checkToken(ROLES.ADMIN, ROLES.CUSTOMER), userController.logout)
-userRoutes.post('/refresh-token', userController.refreshToken)
 userRoutes.get('/', checkToken(ROLES.ADMIN, ROLES.CUSTOMER), userController.getProfile)
+userRoutes.post('/refresh-token', userController.refreshToken)
 userRoutes.patch('/', checkToken(ROLES.ADMIN, ROLES.CUSTOMER), upload.single('img'), userController.updateProfile)
+userRoutes.get('/devices', checkToken(ROLES.ADMIN, ROLES.CUSTOMER), userController.getDevices)
+userRoutes.delete('/devices/:id', checkToken(ROLES.ADMIN, ROLES.CUSTOMER), userController.deleteDevice)
 
 export default userRoutes
