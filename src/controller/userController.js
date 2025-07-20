@@ -5,12 +5,12 @@ import User from "./../model/mongodb/userModel.js"
 import DatabaseError from "./../exception/DatabaseError.js"
 import UserTemp from "./../model/mongodb/userTempModel.js"
 import ROLES from "./../constant/roles.js"
-import { sendConfirmEmail } from "./../utils/email.js"
+import { sendChangePasswordOTPEmail, sendConfirmEmail, sendResetPasswordLinkEmail } from "./../utils/email.js"
 import ValidationError from "./../exception/ValidationError.js"
 import fs from 'fs/promises'
 import { authorizationUrl } from "./../config/googleAuth.js"
 import getUserGoogleInfo from "./../utils/googleApi.js"
-import { ACCESS_TOKEN_EXPIRE_MINUTE, FRONTEND_BASE_URL } from "./../config/env.js"
+import { ACCESS_TOKEN_EXPIRE_MINUTE, FRONTEND_BASE_URL, FRONTEND_RESET_PASSWORD_URL } from "./../config/env.js"
 import OauthError from "./../exception/OauthError.js"
 import { generateToken } from "../utils/jwtHelper.js"
 import tokenRepository from "../model/redis/tokenRepository.js"
@@ -21,6 +21,13 @@ import { wsServer } from "../config/expressConfig.js"
 import jwt from 'jsonwebtoken'
 import { createSession } from "../utils/session.js"
 import generateRandomString from "../utils/generateRandomString.js"
+import dayjs from "dayjs"
+import otpRepository from "../model/redis/otpRepository.js"
+import relativeTime from 'dayjs/plugin/relativeTime.js'
+import bcrypt from 'bcrypt'
+import { checkExistingOtp, generateOtp, saveOtp } from "../utils/otp.js"
+
+dayjs.extend(relativeTime)
 
 const userController = {
   register: async (req, res, next) => {
@@ -255,6 +262,222 @@ const userController = {
 
       // response new access token
       responseApi.success(res, { access_token: accessToken })
+    } catch(err) {
+      next(err)
+    }
+  },
+
+  getProfile: async (req, res, next) => {
+    try {
+      // get user profile
+      const user = await User.findById(req.user_id)
+        .select('name email img_url city district sub_district')
+
+      const responseContent = {
+        name: user.name,
+        email: user.email,
+        img_url: user.img_url,
+        city: user.city,
+        district: user.district,
+        sub_district: user.sub_district
+      }
+
+      // response
+      responseApi.success(res, responseContent)
+    } catch(err) {
+      next(err)
+    }
+  },
+
+  updateProfile: async (req, res, next) => {
+    try {
+      // validate
+      const payload = validate(userValidation.updateProfile, req.body)
+      
+      // update user in mongodb
+      const newField = {}
+      if(payload.name) {
+        newField.name = payload.name
+      }
+      if(payload.city) {
+        newField.city = payload.city
+      }
+      if(payload.district) {
+        newField.district = payload.district
+      }
+      if(payload.sub_district) {
+        newField.sub_district = payload.sub_district
+      }
+      if(req.file) {
+        newField.img_url = req.file.path;
+      }
+      const updatedUser = await User.findByIdAndUpdate(req.user_id, newField, { new: true })
+      
+      // response
+      return responseApi.success(res, {
+        name: updatedUser.name,
+        img_url: updatedUser.img_url,
+        city: updatedUser.city,
+        district: updatedUser.district,
+        sub_district: updatedUser.sub_district
+      })
+    } catch(err) {
+      next(err)
+    }
+  },
+
+  getDevices: async (req, res, next) => {
+    try {
+      // get devices(refresh token) from redis
+      let devices = await refreshTokenRepository.search()
+        .where('user_id').equals(req.user_id)
+        .return.all()
+
+      devices = devices.map(e => {
+        const last_login = dayjs(e.created_at).format('DD MMMM YYYY, HH:mm:ss');
+        return {
+          id: e.id,
+          last_login,
+          os: e.os,
+          device: e.device,
+          platform: e.platform,
+          browser: e.browser
+        }
+      })
+
+      // response
+      return responseApi.success(res, devices)
+    } catch(err) {
+      next(err)
+    }
+  },
+
+  deleteDevice: async (req, res, next) => {
+    try {
+      // validate id
+      const refreshTokenId = validate(userValidation.deleteDevice, req.params.id)
+
+      // if id is current token -> throw error
+      const token = req.headers.authorization.split(' ')[1];
+      const currentAccessToken = await tokenRepository.search()
+        .where('token').equals(token)
+        .return.all()
+      const currentAccessTokenId = currentAccessToken[0].id
+      let desiredRefreshToken = await refreshTokenRepository.search()
+        .where('id').match(refreshTokenId)
+        .return.all()
+      desiredRefreshToken = desiredRefreshToken[0]
+      if(desiredRefreshToken.access_token_id === currentAccessTokenId) {
+        throw new DatabaseError('You can not delete your current device', 400)
+      }
+
+      // delete refresh token and all related access token in redis
+      const allUserAccessToken = await tokenRepository.search()
+        .where('user_id').equals(req.user_id)
+        .return.all()
+      const allUserRefreshToken = await refreshTokenRepository.search()
+        .where('user_id').equals(req.user_id)
+        .return.all()
+      for(const token of allUserAccessToken) {
+        await tokenRepository.remove(token[EntityId])
+      }
+      for(const token of allUserRefreshToken) {
+        await refreshTokenRepository.remove(token[EntityId])
+      }
+
+      // response
+      return responseApi.success(res, {})
+    } catch(err) {
+      next(err)
+    }
+  },
+
+  requestChangePassword: async (req, res, next) => {
+    try {
+      // check if code/request already exists
+      await checkExistingOtp(req.user_email)
+
+      // generate 6 digit unix code
+      const code = generateOtp()
+
+      // store to redis with ttl 10 minutes
+      await saveOtp(code, req.user_email)
+
+      // sent to user's email
+      sendChangePasswordOTPEmail({
+        otp: code,
+        userEmail: req.user_email
+      })
+
+      // response
+      return responseApi.success(res, {}, 201, 'Change password OTP has been sent to your email')
+    } catch(err) {
+      next(err)
+    }
+  },
+
+  requestResetPassword: async (req, res, next) => {
+    try {
+      // validate
+      const payload = validate(userValidation.requestResetPassword, req.body)
+
+      // check if email exists (in mongodb), if it doesn't exist -> throw error 404
+      const user = await User.findOne({ email: payload.email })
+      if(!user) {
+        throw new DatabaseError('Email is not registered', 404)
+      }
+
+      // check if code/request already exists
+      await checkExistingOtp(payload.email)
+
+      // generate 6 digit unix code
+      const code = generateOtp()
+
+      // store to redis with ttl 10 minutes
+      await saveOtp(code, user.email)
+
+      // send link of change password form page to user's email (otp included)
+      await sendResetPasswordLinkEmail({
+        userEmail: user.email,
+        resetPasswordUrl: FRONTEND_RESET_PASSWORD_URL,
+        otp: code
+      })
+
+      // response
+      return responseApi.success(res, {})
+    } catch(err) {
+      next(err)
+    }
+  },
+
+  changePassword: async (req, res, next) => {
+    try {
+      // validate
+      const payload = validate(userValidation.changePassword, req.body)
+
+      // check otp in redis, if it doesn't exist -> throw error
+      const existingOtp = await otpRepository.search()
+        .where('otp').equals(payload.otp)
+        .return.all()
+      if(existingOtp.length === 0) {
+        throw new DatabaseError('OTP is invalid', 404)
+      }
+
+      // get otp data in redis (email)
+      const userEmail = existingOtp[0].email
+
+      // change password in mongodb, including encription
+      await User.findOneAndUpdate({ 
+        email: userEmail 
+      }, { 
+        password: await bcrypt.hash(payload.new_password, 12)
+      })
+
+      // delete otp in redis
+      await otpRepository.remove(existingOtp[0][EntityId])
+
+      // response
+      return responseApi.success(res, {})
     } catch(err) {
       next(err)
     }

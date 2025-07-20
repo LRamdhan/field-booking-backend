@@ -17,6 +17,8 @@ const transporter = nodemailer.createTransport({
 const confirmEmailUrl = BASE_URL + "/api/users/email/confirm"
 let template = (fs.readFileSync('./src/view/email-confirm.html')).toString()
 let templateReminder = (fs.readFileSync('./src/view/booking-reminder.html')).toString()
+let templateChangePasswordOTP = (fs.readFileSync('./src/view/change-password-otp.html')).toString()
+let templateResetPasswordLink = (fs.readFileSync('./src/view/reset-password-link.html')).toString()
   
 const mailOptions = (destinationEmail, key) => ({
   from: `FieldBooking <${EMAIL_USER}>`,
@@ -52,4 +54,38 @@ const sendReminderEmail = async (data) => {
   return result
 }
 
-export { sendConfirmEmail, sendReminderEmail }
+const sendChangePasswordOTPEmail = async (data) => {
+  const attachedData = {
+    otp: data.otp
+  }
+
+  const mailOptions = {
+    from: `FieldBooking <${EMAIL_USER}>`,
+    to: data.userEmail,
+    subject: "Password OTP",
+    html: mustache.render(templateChangePasswordOTP, attachedData),
+    amp: mustache.render(templateChangePasswordOTP, attachedData),
+  }
+
+  const result = await transporter.sendMail(mailOptions);
+  return result
+}
+
+const sendResetPasswordLinkEmail = async (data) => {
+  const attachedData = {
+    resetUrl: encodeURI(data.resetPasswordUrl + '?otp=' + data.otp)
+  }
+
+  const mailOptions = {
+    from: `FieldBooking <${EMAIL_USER}>`,
+    to: data.userEmail,
+    subject: "Reset Password",
+    html: mustache.render(templateResetPasswordLink, attachedData),
+    amp: mustache.render(templateResetPasswordLink, attachedData),
+  }
+
+  const result = await transporter.sendMail(mailOptions);
+  return result
+}
+
+export { sendConfirmEmail, sendReminderEmail, sendChangePasswordOTPEmail, sendResetPasswordLinkEmail}
