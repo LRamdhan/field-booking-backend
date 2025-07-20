@@ -17,5 +17,8 @@ userRoutes.post('/refresh-token', userController.refreshToken)
 userRoutes.patch('/', checkToken(ROLES.ADMIN, ROLES.CUSTOMER), upload.single('img'), userController.updateProfile)
 userRoutes.get('/devices', checkToken(ROLES.ADMIN, ROLES.CUSTOMER), userController.getDevices)
 userRoutes.delete('/devices/:id', checkToken(ROLES.ADMIN, ROLES.CUSTOMER), userController.deleteDevice)
+userRoutes.get('/password/request-change', checkToken(ROLES.ADMIN, ROLES.CUSTOMER), userController.requestChangePassword)
+userRoutes.post('/password/request-reset', userController.requestResetPassword)
+userRoutes.patch('/password', userController.changePassword)
 
 export default userRoutes

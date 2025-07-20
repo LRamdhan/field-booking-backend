@@ -7,7 +7,7 @@ const userValidation = {
     district: Joi.string().max(100).min(1).trim().required(),
     sub_district: Joi.string().max(100).min(1).trim().required(),
     email: Joi.string().max(100).email().trim().required(),
-    password: Joi.string().min(8).trim().required()
+    password: Joi.string().min(8).trim().alphanum().required()
   }),
 
   login: Joi.object({
@@ -27,6 +27,15 @@ const userValidation = {
   }),
 
   deleteDevice: Joi.string().min(25).trim().required(),
+
+  changePassword: Joi.object({
+    otp: Joi.string().min(6).max(6).trim().pattern(/^\d{6}$/).required(),
+    new_password: Joi.string().min(8).trim().alphanum().required(),
+  }),
+
+  requestResetPassword: Joi.object({
+    email: Joi.string().max(100).email().trim().required(),
+  }),
 }
 
 export default userValidation

@@ -4,9 +4,9 @@ const responseApi = {
     res.json({success: true, message, data})
   },
 
-  error: (res, message, statusCode = 400) => {
+  error: (res, message, statusCode = 400, data = {}) => {
     res.statusCode = statusCode
-    res.json({success: false, message, data: {}})
+    res.json({success: false, message, data})
   },
 
   badRequest: (res, message) => {

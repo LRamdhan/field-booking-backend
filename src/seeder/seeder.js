@@ -18,6 +18,7 @@ import { DateTime } from "luxon";
 import PAYMENT from "../constant/payment.js";
 import DeletedBooking from "../model/mongodb/deletedBookingModel.js";
 import redisConnection from "../config/redisConnection.js";
+import otpRepository from "../model/redis/otpRepository.js";
 
 const createUsers = async () => {
   const users = await User.create([
@@ -235,6 +236,10 @@ const resetRedis = async () => {
   for(const review of reviews) {
     await reviewRepository.remove(review[EntityId])
   }
+  const otps = await otpRepository.search().return.all()
+  for(const otp of otps) {
+    await otpRepository.remove(otp[EntityId])
+  }
 }
 
 const createRedisIndex = async () => {
@@ -244,6 +249,7 @@ const createRedisIndex = async () => {
   await bookedScheduleRepository.createIndex();
   await fieldRepository.createIndex();
   await reviewRepository.createIndex();
+  await otpRepository.createIndex();
 }
 
 const resetJobInRedis = () => {
@@ -279,14 +285,18 @@ const resetJobInRedis = () => {
     // connect redis
     await connectRedis()
 
+    // create redis index 1
+    await createRedisIndex()
+    console.log('Redis index is created (1)');
+
     // delete all redis
     await resetRedis()
     resetJobInRedis()
     console.log('Redis is clear');
 
-    // create redis index
+    // create redis index 2
     await createRedisIndex()
-    console.log('Redis index is created');
+    console.log('Redis index is created (2)');
 
     // redis operation
     await createBookedSchedules(bookings)
@@ -299,7 +309,8 @@ const resetJobInRedis = () => {
     console.log('Seed success');
   } catch(err) {
     console.log('Seed fail');
-    console.log(err.message);
+    console.log(err);
+    process.exit(1)
   }
   process.exit(1)
 })()

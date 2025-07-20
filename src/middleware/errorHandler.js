@@ -16,6 +16,11 @@ const errorHandler = (err, req, res, next) => {
     if(err.responseType === 'html') {
       return responseApi.html(res, err.html, err.responseCode)
     }
+    if(err.body) {
+      return responseApi.error(res, err.message, err.responseCode, {
+        ...err.body
+      })
+    }
     return responseApi.error(res, err.message, err.responseCode)
   }
 

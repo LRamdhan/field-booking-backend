@@ -586,6 +586,268 @@
         }
       }
     },
+    "/users/password/request-change": {
+      "get": {
+        "tags": [
+          "User"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Request change password | CUSTOMER & ADMIN",
+        "description": "OTP code will be sent to user's email",
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Change password OTP has been sent to your email"
+                    },
+                    "data": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Change request has been done before, wait for 10 minutes"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "remaining_time_in_seconds": {
+                          "type": "number",
+                          "example": 10
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "4xx": {
+            "$ref": "#/components/responses/4xx"
+          },
+          "5xx": {
+            "$ref": "#/components/responses/5xx"
+          }
+        }
+      }
+    },
+    "/users/password/request-reset": {
+      "post": {
+        "tags": [
+          "User"
+        ],
+        "summary": "Request reset password | CUSTOMER & ADMIN",
+        "description": "Change password link will be sent to user's email",
+        "requestBody": {
+          "type": "object",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "required": true,
+                    "example": "aioeo@gmail.com"
+                  }
+                }
+              }
+            }
+          }
+        }, 
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Change password link has been sent to your email"
+                    },
+                    "data": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Email is not registered"
+                    },
+                    "data": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Reset request has been done before, wait for 10 minutes"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "remaining_time_in_seconds": {
+                          "type": "number",
+                          "example": 10
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "4xx": {
+            "$ref": "#/components/responses/4xx"
+          },
+          "5xx": {
+            "$ref": "#/components/responses/5xx"
+          }
+        }
+      }
+    },
+    "/users/password/": {
+      "patch": {
+        "tags": [
+          "User"
+        ],
+        "summary": "Change password | CUSTOMER & ADMIN",
+        "requestBody": {
+          "type": "object",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "otp": {
+                    "type": "string",
+                    "required": true,
+                    "example": "123456"
+                  },
+                  "new_password": {
+                    "type": "string",
+                    "required": true,
+                    "example": "satudua12"
+                  }
+                }
+              }
+            }
+          }
+        }, 
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Success"
+                    },
+                    "data": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "OTP is invalid"
+                    },
+                    "data": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "4xx": {
+            "$ref": "#/components/responses/4xx"
+          },
+          "5xx": {
+            "$ref": "#/components/responses/5xx"
+          }
+        }
+      }
+    },
     "/fields": {
       "get": {
         "tags": [
