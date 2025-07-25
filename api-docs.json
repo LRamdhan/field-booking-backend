@@ -498,36 +498,71 @@
                       "example": "Success"
                     },
                     "data": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "id": {
-                            "type": "string",
-                            "example": "1"
-                          },
-                          "last_login": {
-                            "type": "string",
-                            "example": "07-07-2025 11.00"
-                          },
-                          "os": {
-                            "type": "string",
-                            "example": "Window 10.0"
-                          },
-                          "device": {
-                            "type": "string",
-                            "example": "Desktop"
-                          },
-                          "platform": {
-                            "type": "string",
-                            "example": "Microsoft Windows"
-                          },
-                          "browser": {
-                            "type": "string",
-                            "example": "Chrome"
+                      "type": "object",
+                      "properties": {
+                        "current": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "example": "1"
+                            },
+                            "last_login": {
+                              "type": "string",
+                              "example": "07-07-2025 11.00"
+                            },
+                            "os": {
+                              "type": "string",
+                              "example": "Window 10.0"
+                            },
+                            "device": {
+                              "type": "string",
+                              "example": "Desktop"
+                            },
+                            "platform": {
+                              "type": "string",
+                              "example": "Microsoft Windows"
+                            },
+                            "browser": {
+                              "type": "string",
+                              "example": "Chrome"
+                            }
+                          }
+                        },
+                        "others": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "example": "1"
+                              },
+                              "last_login": {
+                                "type": "string",
+                                "example": "07-07-2025 11.00"
+                              },
+                              "os": {
+                                "type": "string",
+                                "example": "Window 10.0"
+                              },
+                              "device": {
+                                "type": "string",
+                                "example": "Desktop"
+                              },
+                              "platform": {
+                                "type": "string",
+                                "example": "Microsoft Windows"
+                              },
+                              "browser": {
+                                "type": "string",
+                                "example": "Chrome"
+                              }
+                            }
                           }
                         }
                       }
+                
                     }
                   }
                 }
@@ -643,6 +678,132 @@
                           "example": 10
                         }
                       }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "4xx": {
+            "$ref": "#/components/responses/4xx"
+          },
+          "5xx": {
+            "$ref": "#/components/responses/5xx"
+          }
+        }
+      }
+    },
+    "/users/password/resend-change-otp": {
+      "post": {
+        "tags": [
+          "User"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Resend change password OTP | CUSTOMER & ADMIN",
+        "description": "Resend change password OTP to user's email again",
+        "responses": {
+          "200": {
+            "description": "OTP successfully sent to user's email",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "change password OTP has been sent to your email"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "timeout": {
+                          "type": "number",
+                          "example": 100
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Auth token is invalid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Token is invalid"
+                    },
+                    "data": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Timeout to resend isn't runned out yet",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Your request can't be done now, try again within given timeout"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "timeout": {
+                          "type": "number",
+                          "example": 100
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "There's no change request exists",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Change request not found"
+                    },
+                    "data": {
+                      "type": "object"
                     }
                   }
                 }

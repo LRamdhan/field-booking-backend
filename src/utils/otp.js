@@ -15,10 +15,12 @@ export const saveOtp = async (otp, email) => {
   let expiresAt = dayjs().tz("Asia/Jakarta")
   expiresAt = expiresAt.add(10, 'minute')
   const createdAt = dayjs().tz("Asia/Jakarta")
+  const lastSentAt = dayjs().tz("Asia/Jakarta")
   const newOtp = await otpRepository.save({
     id: generateRandomString(),
     otp,
     email,
+    last_sent_at: lastSentAt.valueOf(),
     expires_at: expiresAt.valueOf(),
     created_at: createdAt.valueOf()
   })

@@ -11,6 +11,9 @@ const otpSchema = new Schema('otps', {
   email: {
     type: 'string'
   },
+  last_sent_at: {
+    type: 'number'
+  },
   expires_at: {
     type: 'number'
   },

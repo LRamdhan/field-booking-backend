@@ -333,6 +333,25 @@ const userController = {
         .where('user_id').equals(req.user_id)
         .return.all()
 
+
+      // get current session
+      const token = req.headers.authorization.split(' ')[1];
+      const currentAccessToken = await tokenRepository.search()
+        .where('token').equals(token)
+        .return.all()
+      const currentAccessTokenId = currentAccessToken[0].id
+      let currentSession = devices.find(e => e.access_token_id === currentAccessTokenId)
+      currentSession = {
+        id: currentSession.id,
+        last_login: dayjs(currentSession.created_at).format('DD MMMM YYYY, HH:mm:ss'),
+        os: currentSession.os,
+        device: currentSession.device,
+        platform: currentSession.platform,
+        browser: currentSession.browser
+      } 
+
+      // get other session
+      devices = devices.filter(e => e.access_token_id !== currentAccessTokenId)
       devices = devices.map(e => {
         const last_login = dayjs(e.created_at).format('DD MMMM YYYY, HH:mm:ss');
         return {
@@ -346,7 +365,10 @@ const userController = {
       })
 
       // response
-      return responseApi.success(res, devices)
+      return responseApi.success(res, {
+        current: currentSession,
+        others: devices
+      })
     } catch(err) {
       next(err)
     }
@@ -368,22 +390,17 @@ const userController = {
         .return.all()
       desiredRefreshToken = desiredRefreshToken[0]
       if(desiredRefreshToken.access_token_id === currentAccessTokenId) {
-        throw new DatabaseError('You can not delete your current device', 400)
+        throw new DatabaseError('You can not delete your current device', 409)
       }
 
       // delete refresh token and all related access token in redis
-      const allUserAccessToken = await tokenRepository.search()
-        .where('user_id').equals(req.user_id)
+      const matchedAccessToken = await tokenRepository.search()
+        .where('id').match(desiredRefreshToken.access_token_id)
         .return.all()
-      const allUserRefreshToken = await refreshTokenRepository.search()
-        .where('user_id').equals(req.user_id)
-        .return.all()
-      for(const token of allUserAccessToken) {
+      for(const token of matchedAccessToken) { // even though it uses iteration, buat number of expected access token is one
         await tokenRepository.remove(token[EntityId])
       }
-      for(const token of allUserRefreshToken) {
-        await refreshTokenRepository.remove(token[EntityId])
-      }
+      await refreshTokenRepository.remove(desiredRefreshToken[EntityId])
 
       // response
       return responseApi.success(res, {})
@@ -478,6 +495,45 @@ const userController = {
 
       // response
       return responseApi.success(res, {})
+    } catch(err) {
+      next(err)
+    }
+  },
+
+  resendChangePasswordOTP: async (req, res, next) => {
+    try {
+      // search for desired request (refresh token), if not found -> response 404
+      const existingOtp = await otpRepository.search()
+        .where('email').equals(req.user_email)
+        .return.all()
+      if(existingOtp.length === 0) {
+        throw new DatabaseError('Change Request not found', 404)
+      }
+
+      // calculate remaining timeut, if still exists -> response 409
+      const lastSentAt = dayjs(existingOtp[0].last_sent_at) // already in Asia/Jakarta
+      const now = dayjs().tz("Asia/Jakarta")
+      const gap = now.diff(lastSentAt, 'second')
+      if(gap < 60) {
+        throw new DatabaseError("Your request can't be done now, try again within given timeout", 409, 'json', null, {
+          timeout: 60 - gap
+        })
+      };
+
+      // sent to user's email
+      sendChangePasswordOTPEmail({
+        otp: existingOtp[0].otp,
+        userEmail: req.user_email
+      })
+
+      // update last_sent_at in redis
+      const updatedOtp = existingOtp[0]
+      const newLastSentAt = now.valueOf()
+      updatedOtp.last_sent_at = newLastSentAt
+      await otpRepository.save(updatedOtp)
+
+      // response
+      return responseApi.success(res, {timeout: 60}, 200, 'Change password OTP has been sent to your email')
     } catch(err) {
       next(err)
     }

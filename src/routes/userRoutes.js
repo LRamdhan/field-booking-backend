@@ -18,6 +18,7 @@ userRoutes.patch('/', checkToken(ROLES.ADMIN, ROLES.CUSTOMER), upload.single('im
 userRoutes.get('/devices', checkToken(ROLES.ADMIN, ROLES.CUSTOMER), userController.getDevices)
 userRoutes.delete('/devices/:id', checkToken(ROLES.ADMIN, ROLES.CUSTOMER), userController.deleteDevice)
 userRoutes.get('/password/request-change', checkToken(ROLES.ADMIN, ROLES.CUSTOMER), userController.requestChangePassword)
+userRoutes.post('/password/resend-change-otp', checkToken(ROLES.ADMIN, ROLES.CUSTOMER), userController.resendChangePasswordOTP)
 userRoutes.post('/password/request-reset', userController.requestResetPassword)
 userRoutes.patch('/password', userController.changePassword)
 
