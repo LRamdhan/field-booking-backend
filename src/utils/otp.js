@@ -40,3 +40,13 @@ export const checkExistingOtp = async (userEmail) => {
     })
   }
 }
+
+export const checkNotFoundOtp = async (userEmail, message) => {
+  const existingOtp = await otpRepository.search()
+    .where('email').equals(userEmail)
+    .return.all()
+  if(existingOtp.length === 0) {
+    throw new DatabaseError(message, 404)
+  }
+  return existingOtp[0]
+}

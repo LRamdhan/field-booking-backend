@@ -622,7 +622,7 @@
       }
     },
     "/users/password/request-change": {
-      "get": {
+      "post": {
         "tags": [
           "User"
         ],
@@ -789,6 +789,97 @@
           },
           "404": {
             "description": "There's no change request exists",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Change request not found"
+                    },
+                    "data": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "4xx": {
+            "$ref": "#/components/responses/4xx"
+          },
+          "5xx": {
+            "$ref": "#/components/responses/5xx"
+          }
+        }
+      }
+    },
+    "/users/password/cancel-change-request": {
+      "delete": {
+        "tags": [
+          "User"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Cancel request change password | CUSTOMER & ADMIN",
+        "description": "Existing change request will be deleted",
+        "responses": {
+          "200": {
+            "description": "Successfully deleted change request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Successfully deleted change request"
+                    },
+                    "data": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Auth token is invalid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Token is invalid"
+                    },
+                    "data": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "There's no change request exists for this account",
             "content": {
               "application/json": {
                 "schema": {

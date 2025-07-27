@@ -25,7 +25,7 @@ import dayjs from "dayjs"
 import otpRepository from "../model/redis/otpRepository.js"
 import relativeTime from 'dayjs/plugin/relativeTime.js'
 import bcrypt from 'bcrypt'
-import { checkExistingOtp, generateOtp, saveOtp } from "../utils/otp.js"
+import { checkExistingOtp, checkNotFoundOtp, generateOtp, saveOtp } from "../utils/otp.js"
 
 dayjs.extend(relativeTime)
 
@@ -503,12 +503,7 @@ const userController = {
   resendChangePasswordOTP: async (req, res, next) => {
     try {
       // search for desired request (refresh token), if not found -> response 404
-      const existingOtp = await otpRepository.search()
-        .where('email').equals(req.user_email)
-        .return.all()
-      if(existingOtp.length === 0) {
-        throw new DatabaseError('Change Request not found', 404)
-      }
+      await checkNotFoundOtp(req.user_email, 'Change Request not found')
 
       // calculate remaining timeut, if still exists -> response 409
       const lastSentAt = dayjs(existingOtp[0].last_sent_at) // already in Asia/Jakarta
@@ -521,19 +516,33 @@ const userController = {
       };
 
       // sent to user's email
+      const otp = generateOtp()
       sendChangePasswordOTPEmail({
-        otp: existingOtp[0].otp,
+        otp,
         userEmail: req.user_email
       })
 
-      // update last_sent_at in redis
-      const updatedOtp = existingOtp[0]
-      const newLastSentAt = now.valueOf()
-      updatedOtp.last_sent_at = newLastSentAt
-      await otpRepository.save(updatedOtp)
+      // delete and create new otp in redis
+      await otpRepository.remove(existingOtp[0][EntityId])
+      await saveOtp(otp, req.user_email)
 
       // response
       return responseApi.success(res, {timeout: 60}, 200, 'Change password OTP has been sent to your email')
+    } catch(err) {
+      next(err)
+    }
+  },
+
+  cancelChangeRequest: async (req, res, next) => {
+    try {
+      // check if otp exists in redis, if not response 404
+      const otp = await checkNotFoundOtp(req.user_email, 'There is no change request found')
+
+      // delete otp in redis based on email
+      await otpRepository.remove(otp[EntityId])
+
+      // response
+      return responseApi.success(res, {}, 200, 'Successfully delete change request')
     } catch(err) {
       next(err)
     }
