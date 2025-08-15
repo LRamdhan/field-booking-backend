@@ -4,10 +4,12 @@ import Field from "../model/mongodb/fieldModel.js"
 import Review from "../model/mongodb/reviewsModel.js"
 import User from "../model/mongodb/userModel.js"
 import bookedScheduleRepository from "../model/redis/bookedScheduleRepository.js"
+import fieldRepository from "../model/redis/fieldRepository.js"
 import reviewRepository from "../model/redis/reviewRepository.js"
 import responseApi from "../utils/responseApi.js"
 import fieldValidation from "../validation/fieldValidation.js"
 import validate from "../validation/validate.js"
+import mongoose from "mongoose"
 
 const fieldController = {
   getFields: async (req, res, next) => {
@@ -138,9 +140,36 @@ const fieldController = {
         field_id: review.field_id.toString(),
         user_id: review.user_id.toString(),
         rating: review.rating,
-        description:review.description,
+        description: review.description,
         created_at: (new Date(review.createdAt)).getTime()
       })
+
+      // re calculate overall review
+      const retingInfo = await Review.aggregate([
+        {
+          $match: {
+            field_id: new mongoose.Types.ObjectId(field_id)
+          }
+        },
+        {
+          $group: {
+            _id: null,
+            totalRating: { $sum: "$rating" },
+            totalDocuments: { $sum: 1 },
+            averageRating: { $avg: "$rating" }
+          }
+        }
+      ]);
+      const newRating = retingInfo[0].averageRating
+
+      // update field both in mongodb and redis
+      await Field.findByIdAndUpdate(field_id, {rating: newRating})
+      let targetField = await fieldRepository.search()
+        .where('id').equals(field_id)
+        .return.all()
+      targetField = targetField[0]
+      targetField.rating = newRating
+      await fieldRepository.save(targetField)
 
       // response
       return responseApi.success(res, {})
@@ -158,8 +187,9 @@ const fieldController = {
       })
 
       // check if field exists
+      let field
       try {
-        const field = await Field.findById(data.field_id)
+        field = await Field.findById(data.field_id)
         if(!field) {
           throw new Error()
         }
@@ -196,14 +226,18 @@ const fieldController = {
         return total
       })(data.star)
 
-      const cachedReviews = await (await getFilteredReviews(data.star))()
-      const count = await reviewRepository.search()
+      const cachedReviews = await (await getFilteredReviews(data.star))() // from redis
+
+      const count = await reviewRepository.search() // sum of reviews in redis
         .where('field_id').equals(data.field_id)  
         .return.count()
+
       const allReviews = await reviewRepository.search()
         .where('field_id').equals(data.field_id)  
         .return.all()
-      const averageRating = (allReviews.reduce((acc, review) => acc + review.rating, 0)) / allReviews.length
+      
+      const averageRating = field.rating // get from field in redis / mongodb
+
       const parsedCacheReviews = []
       for(const review of cachedReviews) {
         const tempUser = await User.findById(review.user_id).select('name img_url')

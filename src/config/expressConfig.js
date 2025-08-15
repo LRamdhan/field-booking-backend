@@ -12,6 +12,7 @@ import fieldRoutes from '../routes/fieldRoutes.js'
 import bookingRoutes from '../routes/bookingRoutes.js'
 import swaggerUi from 'swagger-ui-express';
 import fs from 'fs'
+import morgan from 'morgan'
 
 // create express instance
 const server = express()
@@ -24,6 +25,7 @@ server.use(cors())
 server.use(express.json())
 server.use(cookieParser())
 server.use(useragent.express());
+server.use(morgan('dev'))
 
 // add route
 server.use('/api/users', userRoutes)

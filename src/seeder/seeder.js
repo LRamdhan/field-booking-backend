@@ -23,13 +23,13 @@ import otpRepository from "../model/redis/otpRepository.js";
 const createUsers = async () => {
   const users = await User.create([
     {
-      name: 'Luzi Ramdan',
+      name: 'Udin Samshudin',
       city: 'Sumedang',
       district: 'Cisitu',
       sub_district: 'Situmekar',
       img_url: "https://avatar.iran.liara.run/public/29",
       role: ROLES.CUSTOMER,
-      email: 'luji@gmail.com',
+      email: 'udin@gmail.com',
       password: await bcrypt.hash('satudua12', 12),
     },
     {
@@ -61,12 +61,12 @@ const createFields = async () => {
     {
       name: 'Lapang A',
       images: [
-        'https://media.istockphoto.com/id/1360818558/photo/girls-soccer-team-soccer-field.jpg?s=612x612&w=0&k=20&c=jlKrVzTewX5do9KW3nEo3QYg7mSK1X9zaqNHvOMjz20=',
-        'https://asset.ayo.co.id/image/venue/174002737524887.image_cropper_1740027335460.jpg_large.jpeg',
-        'https://asset.ayo.co.id/image/venue-field/174010689275711.image_cropper_1740106882997.jpg.jpeg'
+        'https://res.cloudinary.com/dfemddtv2/image/upload/v1734402124/wzus5d6y7qk6ydrh8gep.jpg',
+        'https://res.cloudinary.com/dfemddtv2/image/upload/v1734402192/qbqiervmu81ymesftoiq.jpg',
+        'https://res.cloudinary.com/dfemddtv2/image/upload/v1734402230/g6ktakbijvbtput1bagj.jpg'
       ],
       price: '100000',
-      rating: 4,
+      rating: 0,
       location: 'OUTDOOR',
       floor_type: 'SINTETIS',
       facilities: [
@@ -79,14 +79,14 @@ const createFields = async () => {
     {
       name: 'Lapang B',
       images: [
-        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQGqbLitUUdBvhcjZ5Dh5bWhOfXOtETR9_VkQ&s',
-        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQKhU3kb2oCqxJ15UEKAvk9ocOHjYD8dpSgpASxhURBFaGw2IkCi1-2WgxQioPPKJe9eMg&usqp=CAU',
-        'https://s.alicdn.com/@sc04/kf/H397151b14287471592326472064954c8r.jpg_300x300.jpg'
+        'https://res.cloudinary.com/dfemddtv2/image/upload/v1734402795/pab9m4q7wljnrctkqjdn.jpg',
+        'https://res.cloudinary.com/dfemddtv2/image/upload/v1734402838/smc9bs1ppt70vqlyqttw.jpg',
+        'https://res.cloudinary.com/dfemddtv2/image/upload/v1734402869/jhlnvrqhfrqyimmp3i9t.jpg'
       ],
       price: '120000',
-      rating: 3,
+      rating: 0,
       location: 'INDOOR',
-      floor_type: 'VINYL',
+      floor_type: 'INTERLOCK',
       facilities: [
         'Scoring Board',
         'Backup Balls',
@@ -96,14 +96,14 @@ const createFields = async () => {
     {
       name: 'Lapang C',
       images: [
-        'https://www.snapsports.com/wp-content/uploads/2022/03/com-futsal-gallery-1.webp',
-        'https://media.istockphoto.com/id/179072181/photo/stadium.jpg?s=612x612&w=0&k=20&c=XX7ke1Zf4K19Is5GwH6gB8DlRMyzqkWQomiv5ROnmz0=',
-        'https://s.alicdn.com/@sc04/kf/HTB1ayufKeGSBuNjSspbq6AiipXa3.jpg'
+        'https://res.cloudinary.com/dfemddtv2/image/upload/v1734403791/gwaxlvheco4qaguj9cbt.jpg',
+        'https://res.cloudinary.com/dfemddtv2/image/upload/v1734403820/cwkaepcsfcxtmyudqi6e.jpg',
+        'https://res.cloudinary.com/dfemddtv2/image/upload/v1734403847/ktgf695pt6hc9oqrbzih.jpg'
       ],
       price: '90000',
-      rating: 5,
+      rating: 0,
       location: 'INDOOR',
-      floor_type: 'INTERLOCK',
+      floor_type: 'VINYL',
       facilities: [
         'Scoring Board',
         'Backup Balls',
@@ -277,10 +277,10 @@ const resetJobInRedis = () => {
     console.log('New entries is inserted');
     const fields = await createFields()
     console.log('New fields is inserted');
-    const bookings = await createBookings(users, fields)
-    console.log('New bookings is inserted');
-    const reviews = await createReviews(bookings)
-    console.log('New reviews is inserted');
+    // const bookings = await createBookings(users, fields) // should be fixed first
+    // console.log('New bookings is inserted');
+    // const reviews = await createReviews(bookings)
+    // console.log('New reviews is inserted');
 
     // connect redis
     await connectRedis()
@@ -299,12 +299,12 @@ const resetJobInRedis = () => {
     console.log('Redis index is created (2)');
 
     // redis operation
-    await createBookedSchedules(bookings)
-    console.log('Booked Schedules is inserted');
+    // await createBookedSchedules(bookings) //should be fixed first
+    // console.log('Booked Schedules is inserted');
     await createFieldCache(fields)
     console.log('Field Cache is inserted');
-    await createReviewCache(reviews)
-    console.log('Review Cache is inserted');
+    // await createReviewCache(reviews)
+    // console.log('Review Cache is inserted');
 
     console.log('Seed success');
   } catch(err) {

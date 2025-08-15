@@ -22,11 +22,13 @@ import jwt from 'jsonwebtoken'
 import { createSession } from "../utils/session.js"
 import generateRandomString from "../utils/generateRandomString.js"
 import dayjs from "dayjs"
+import "dayjs/locale/id.js"
 import otpRepository from "../model/redis/otpRepository.js"
 import relativeTime from 'dayjs/plugin/relativeTime.js'
 import bcrypt from 'bcrypt'
 import { checkExistingOtp, checkNotFoundOtp, generateOtp, saveOtp } from "../utils/otp.js"
 
+dayjs.locale('id');
 dayjs.extend(relativeTime)
 
 const userController = {
@@ -162,7 +164,7 @@ const userController = {
       });
 
       // redirect
-      res.redirect(req.query?.state ? FRONTEND_BASE_URL + req.query.state : FRONTEND_BASE_URL + '/dashboard')
+      res.redirect(req.query?.state ? FRONTEND_BASE_URL + req.query.state : FRONTEND_BASE_URL + '/')
     } catch(err) {
       next(new OauthError(err.message))
     }
@@ -333,7 +335,6 @@ const userController = {
         .where('user_id').equals(req.user_id)
         .return.all()
 
-
       // get current session
       const token = req.headers.authorization.split(' ')[1];
       const currentAccessToken = await tokenRepository.search()
@@ -341,6 +342,9 @@ const userController = {
         .return.all()
       const currentAccessTokenId = currentAccessToken[0].id
       let currentSession = devices.find(e => e.access_token_id === currentAccessTokenId)
+      if(!currentSession) {
+        throw new DatabaseError('Current session not found', 401)
+      }
       currentSession = {
         id: currentSession.id,
         last_login: dayjs(currentSession.created_at).format('DD MMMM YYYY, HH:mm:ss'),
@@ -503,10 +507,10 @@ const userController = {
   resendChangePasswordOTP: async (req, res, next) => {
     try {
       // search for desired request (refresh token), if not found -> response 404
-      await checkNotFoundOtp(req.user_email, 'Change Request not found')
+      const existingOtp = await checkNotFoundOtp(req.user_email, 'Change Request not found')
 
       // calculate remaining timeut, if still exists -> response 409
-      const lastSentAt = dayjs(existingOtp[0].last_sent_at) // already in Asia/Jakarta
+      const lastSentAt = dayjs(existingOtp.last_sent_at) // already in Asia/Jakarta
       const now = dayjs().tz("Asia/Jakarta")
       const gap = now.diff(lastSentAt, 'second')
       if(gap < 60) {
@@ -523,7 +527,7 @@ const userController = {
       })
 
       // delete and create new otp in redis
-      await otpRepository.remove(existingOtp[0][EntityId])
+      await otpRepository.remove(existingOtp[EntityId])
       await saveOtp(otp, req.user_email)
 
       // response
