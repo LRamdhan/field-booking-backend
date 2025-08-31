@@ -7,6 +7,9 @@
     "dev": "nodemon src/main.js",
     "seed": "node src/seeder/seeder.js",
     "test": "jest --runInBand",
+    "start": "node src/main.js",
+    "build": "docker build -t lapangku-backend:1.0.0 .",
+    "compose": "docker-compose up -d",
     "test-user": "jest --testPathPattern=\"test/user.test.js\"",
     "test-field": "jest --testPathPattern=\"test/field.test.js\"",
     "test-booking": "jest --testPathPattern=\"test/booking.test.js\""
