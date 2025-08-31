@@ -2,13 +2,18 @@
 
 <hr/>
 
-## How To Run Server
+## Preparation
 
-1. Create .env file using .env.example, fill all required fields
+Create .env file using .env.example, fill all required fields!
 
 <br/>
 
-2. Run Mongodb
+## How To Run Server
+
+
+<br/>
+
+1. Run Mongodb
 ```bash
 c:
 mongod --auth
@@ -16,7 +21,7 @@ mongod --auth
 
 <br/>
 
-3. Run Redis
+2. Run Redis
 ```bash
 cd redis
 redis-stack-server redis.conf
@@ -24,16 +29,27 @@ redis-stack-server redis.conf
 
 <br/>
 
-4. Run Seeder
+3. Run Seeder
 ```bash
 npm run seed
 ```
 
 <br/>
 
-5. Run Server
+4. Run Server
 ```bash
 npm run dev
+```
+
+<br/>
+
+
+## Using Docker
+
+
+Pulls all required images and runs it all via docker compose
+```bash
+npm run compose
 ```
 
 <br/>
