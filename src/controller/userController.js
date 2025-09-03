@@ -157,7 +157,7 @@ const userController = {
         maxAge: 15 * 60 * 1000,
         sameSite: 'lax',
         path: '/',
-        domain: FRONTEND_BASE_URL
+        // domain: FRONTEND_BASE_URL
       });
       
       res.cookie('refresh_token', refreshToken, {
@@ -166,7 +166,7 @@ const userController = {
         maxAge: 60 * 60 * 24 * 30 * 1000,
         sameSite: 'lax',
         path: '/',
-        domain: FRONTEND_BASE_URL
+        // domain: FRONTEND_BASE_URL
       });
 
       // redirect

@@ -14,4 +14,4 @@ startJob()
 
 // start express server
 const PORT = 3000
-app.listen(PORT, () => console.log('Express runs on localhost:' + PORT))
+app.listen(PORT, () => console.log('Express runs on port:' + PORT))
