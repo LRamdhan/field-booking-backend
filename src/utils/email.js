@@ -21,7 +21,7 @@ let templateChangePasswordOTP = (fs.readFileSync('./src/view/change-password-otp
 let templateResetPasswordLink = (fs.readFileSync('./src/view/reset-password-link.html')).toString()
   
 const mailOptions = (destinationEmail, key) => ({
-  from: `FieldBooking <${EMAIL_USER}>`,
+  from: `LapangKu <${EMAIL_USER}>`,
   to: destinationEmail,
   subject: "Konfirmasi",
   html: mustache.render(template, {confirmEmailUrl, key}),
@@ -43,7 +43,7 @@ const sendReminderEmail = async (data) => {
   }
 
   const mailOptions = {
-    from: `FieldBooking <${EMAIL_USER}>`,
+    from: `LapangKu <${EMAIL_USER}>`,
     to: data.userEmail,
     subject: "Booking Reminder",
     html: mustache.render(templateReminder, attachedData),
@@ -60,7 +60,7 @@ const sendChangePasswordOTPEmail = async (data) => {
   }
 
   const mailOptions = {
-    from: `FieldBooking <${EMAIL_USER}>`,
+    from: `LapangKu <${EMAIL_USER}>`,
     to: data.userEmail,
     subject: "Password OTP",
     html: mustache.render(templateChangePasswordOTP, attachedData),
@@ -77,7 +77,7 @@ const sendResetPasswordLinkEmail = async (data) => {
   }
 
   const mailOptions = {
-    from: `FieldBooking <${EMAIL_USER}>`,
+    from: `LapangKu <${EMAIL_USER}>`,
     to: data.userEmail,
     subject: "Reset Password",
     html: mustache.render(templateResetPasswordLink, attachedData),

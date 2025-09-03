@@ -154,13 +154,19 @@ const userController = {
       res.cookie('access_token', accessToken, {
         httpOnly: false,
         secure: false,
-        maxAge: 15 * 60 * 1000
+        maxAge: 15 * 60 * 1000,
+        sameSite: 'lax',
+        path: '/',
+        domain: FRONTEND_BASE_URL
       });
       
       res.cookie('refresh_token', refreshToken, {
         httpOnly: false,
         secure: false,
-        maxAge: 60 * 60 * 24 * 30 * 1000
+        maxAge: 60 * 60 * 24 * 30 * 1000,
+        sameSite: 'lax',
+        path: '/',
+        domain: FRONTEND_BASE_URL
       });
 
       // redirect

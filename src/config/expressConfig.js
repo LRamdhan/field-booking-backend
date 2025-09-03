@@ -13,13 +13,18 @@ import bookingRoutes from '../routes/bookingRoutes.js'
 import swaggerUi from 'swagger-ui-express';
 import fs from 'fs'
 import morgan from 'morgan'
+import { FRONTEND_BASE_URL } from './env.js'
 
 // create express instance
 const server = express()
 
 // configuration
 server.set("trust proxy", true);
-server.use(cors())
+server.use(cors({
+  origin: FRONTEND_BASE_URL,
+  credentials: true,
+  optionsSuccessStatus: 200
+}))
 
 // add functionality
 server.use(express.json())
