@@ -10,7 +10,7 @@ import ValidationError from "./../exception/ValidationError.js"
 import fs from 'fs/promises'
 import { authorizationUrl } from "./../config/googleAuth.js"
 import getUserGoogleInfo from "./../utils/googleApi.js"
-import { ACCESS_TOKEN_EXPIRE_MINUTE, FRONTEND_BASE_URL, FRONTEND_RESET_PASSWORD_URL } from "./../config/env.js"
+import { ACCESS_TOKEN_EXPIRE_MINUTE, FRONTEND_BASE_URL, FRONTEND_RESET_PASSWORD_URL, PRODUCTION } from "./../config/env.js"
 import OauthError from "./../exception/OauthError.js"
 import { generateToken } from "../utils/jwtHelper.js"
 import tokenRepository from "../model/redis/tokenRepository.js"
@@ -153,20 +153,18 @@ const userController = {
       // set cookies using cookie-parser
       res.cookie('access_token', accessToken, {
         httpOnly: false,
-        secure: false,
+        secure: PRODUCTION,
         maxAge: 15 * 60 * 1000,
-        sameSite: 'lax',
+        sameSite: 'none',
         path: '/',
-        // domain: FRONTEND_BASE_URL
       });
       
       res.cookie('refresh_token', refreshToken, {
         httpOnly: false,
-        secure: false,
+        secure: PRODUCTION,
         maxAge: 60 * 60 * 24 * 30 * 1000,
-        sameSite: 'lax',
+        sameSite: 'none',
         path: '/',
-        // domain: FRONTEND_BASE_URL
       });
 
       // redirect

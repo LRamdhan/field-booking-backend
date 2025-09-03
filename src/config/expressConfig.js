@@ -21,9 +21,9 @@ const server = express()
 // configuration
 server.set("trust proxy", true);
 server.use(cors({
-  origin: FRONTEND_BASE_URL,
+  // origin: FRONTEND_BASE_URL,
   credentials: true,
-  optionsSuccessStatus: 200
+  // optionsSuccessStatus: 200
 }))
 
 // add functionality
