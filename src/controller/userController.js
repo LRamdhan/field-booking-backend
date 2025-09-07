@@ -27,6 +27,7 @@ import otpRepository from "../model/redis/otpRepository.js"
 import relativeTime from 'dayjs/plugin/relativeTime.js'
 import bcrypt from 'bcrypt'
 import { checkExistingOtp, checkNotFoundOtp, generateOtp, saveOtp } from "../utils/otp.js"
+import utcDateTime from "../utils/utcDateTime.js"
 
 dayjs.locale('id');
 dayjs.extend(relativeTime)
@@ -239,8 +240,8 @@ const userController = {
         user_id: user._id.toString(),
         role: user.role,
         token: accessToken,
-        created_at: new Date(),
-        updated_at: new Date()
+        created_at: dayjs().tz("Asia/Jakarta").valueOf(),
+        updated_at: dayjs().tz("Asia/Jakarta").valueOf(),
       }
       tokenEntity = await tokenRepository.save(tokenEntity)
       const ttlInSeconds = 60 * ACCESS_TOKEN_EXPIRE_MINUTE
@@ -335,7 +336,7 @@ const userController = {
       }
       currentSession = {
         id: currentSession.id,
-        last_login: dayjs(currentSession.created_at).format('DD MMMM YYYY, HH:mm:ss'),
+        last_login: utcDateTime(currentSession.created_at).format('DD MMMM YYYY, HH:mm:ss'),
         os: currentSession.os,
         device: currentSession.device,
         platform: currentSession.platform,
@@ -345,7 +346,7 @@ const userController = {
       // get other session
       devices = devices.filter(e => e.access_token_id !== currentAccessTokenId)
       devices = devices.map(e => {
-        const last_login = dayjs(e.created_at).format('DD MMMM YYYY, HH:mm:ss');
+        const last_login = utcDateTime(e.created_at).format('DD MMMM YYYY, HH:mm:ss');
         return {
           id: e.id,
           last_login,
@@ -498,8 +499,8 @@ const userController = {
       const existingOtp = await checkNotFoundOtp(req.user_email, 'Change Request not found')
 
       // calculate remaining timeut, if still exists -> response 409
-      const lastSentAt = dayjs(existingOtp.last_sent_at) // already in Asia/Jakarta
-      const now = dayjs().tz("Asia/Jakarta")
+      const lastSentAt = utcDateTime(existingOtp.last_sent_at) // already in Asia/Jakarta
+      const now = utcDateTime().tz("Asia/Jakarta")
       const gap = now.diff(lastSentAt, 'second')
       if(gap < 60) {
         throw new DatabaseError("Your request can't be done now, try again within given timeout", 409, 'json', null, {

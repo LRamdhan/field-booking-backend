@@ -4,6 +4,7 @@ import otpRepository from "../model/redis/otpRepository.js";
 import generateRandomString from "./generateRandomString.js";
 import { EntityId } from "redis-om";
 import DatabaseError from "../exception/DatabaseError.js";
+import utcDateTime from "./utcDateTime.js";
 
 dayjs.extend(relativeTime)
 
@@ -32,9 +33,9 @@ export const checkExistingOtp = async (userEmail) => {
     .where('email').equals(userEmail)
     .return.all()
   if(existingOtp.length > 0) {
-    const expiresAt = dayjs(existingOtp[0].expires_at) // already in Asia/Jakarta
+    const expiresAt = utcDateTime(existingOtp[0].expires_at) 
     let now = dayjs().tz("Asia/Jakarta")
-    const gap = dayjs(expiresAt).diff(now, 'second')
+    const gap = utcDateTime(expiresAt).diff(now, 'second')
     throw new DatabaseError('Request has been done before, wait for 10 minutes', 409, 'json', null, {
       remaining_time_in_seconds: gap
     })

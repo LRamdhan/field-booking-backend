@@ -7,6 +7,7 @@ import bookedScheduleRepository from "../model/redis/bookedScheduleRepository.js
 import fieldRepository from "../model/redis/fieldRepository.js"
 import reviewRepository from "../model/redis/reviewRepository.js"
 import responseApi from "../utils/responseApi.js"
+import utcDateTime from "../utils/utcDateTime.js"
 import fieldValidation from "../validation/fieldValidation.js"
 import validate from "../validation/validate.js"
 import mongoose from "mongoose"
@@ -81,7 +82,9 @@ const fieldController = {
       // response
       const response = {
         date: date,
-        schedules: schedules.map(e => (new Date(e.schedule)).getHours())
+        schedules: schedules.map(e => {
+          return utcDateTime(e.schedule).hour()
+        })
       }
 
       return responseApi.success(res, response)
@@ -139,7 +142,7 @@ const fieldController = {
         user_id: review.user_id.toString(),
         rating: review.rating,
         description: review.description,
-        created_at: (new Date(review.createdAt)).getTime()
+        created_at: (utcDateTime(review.createdAt)).valueOf()
       })
 
       // re calculate overall review

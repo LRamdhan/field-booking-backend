@@ -11,6 +11,7 @@ import validate from "../validation/validate.js"
 import { EntityId } from 'redis-om'
 import generateRandomString from "./../utils/generateRandomString.js"
 import { addFinishBookingJob, addReminderBookingJob, removeReminderBookingJob } from "../utils/jobUtils.js"
+import utcDateTime from "../utils/utcDateTime.js"
 
 const bookingController = {
   createBooking : async (req, res, next) => {
@@ -30,7 +31,7 @@ const bookingController = {
       }
 
       // check if schedule in redis already exists, if it does -> throw error (current)
-      const schduleMilis = (new Date(body.schedule)).getTime()
+      const schduleMilis = (utcDateTime(body.schedule)).valueOf()
       const booked = await bookedScheduleRepository.search()
         .where('schedule').eq(schduleMilis)
         .and('field_id').eq(body.field_id)

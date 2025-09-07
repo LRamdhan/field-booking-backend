@@ -27,8 +27,8 @@ export const addFinishBookingJob = async (booking) => {
 }
 
 export const addReminderBookingJob = async (email, scheduleMilis, bookingInfo) => {  
-  // make current time (dayjs) instance with asia/jakarta timezone
-  const current = dayjs().tz("Asia/Jakarta")
+  // make current time (dayjs) instance
+  const current = dayjs()
 
   // calculate the difference between current time with schedule
   let schedule = dayjs(scheduleMilis)
@@ -40,7 +40,7 @@ export const addReminderBookingJob = async (email, scheduleMilis, bookingInfo) =
 
   // create delay time (dayjs) for 2 days before the schedule
   schedule = schedule.subtract(48, 'hour')
-  schedule = schedule.tz(dayjs.tz.guess())
+  // schedule = schedule.tz(dayjs.tz.guess())
 
   // create delay in second
   let delay = schedule.diff(dayjs(), 'second')
