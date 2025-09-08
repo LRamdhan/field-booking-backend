@@ -3,6 +3,9 @@ import { connectRedis } from './config/redisConfig.js'
 import { app } from './config/expressConfig.js'
 import startJob from './job/job.js'
 
+// timezone
+process.env.TZ = 'Asia/Jakarta';
+
 // connect mongodb
 await connectMongoDb()
 
