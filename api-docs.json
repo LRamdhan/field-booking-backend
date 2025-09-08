@@ -1430,7 +1430,8 @@
             "required": true,
             "schema": {
               "type": "number"
-            }
+            },
+            "description": "Epoch time must be at hours 00:00:00"
           }
         ],
         "responses": {

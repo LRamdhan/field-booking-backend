@@ -14,8 +14,6 @@ import Review from "../model/mongodb/reviewsModel.js";
 import bookedScheduleRepository from "../model/redis/bookedScheduleRepository.js";
 import fieldRepository from "../model/redis/fieldRepository.js";
 import reviewRepository from "../model/redis/reviewRepository.js";
-import { DateTime } from "luxon";
-import PAYMENT from "../constant/payment.js";
 import DeletedBooking from "../model/mongodb/deletedBookingModel.js";
 import redisConnection from "../config/redisConnection.js";
 import otpRepository from "../model/redis/otpRepository.js";
@@ -114,73 +112,6 @@ const createFields = async () => {
   ])
 }
 
-const createBookings = async (users, fields) => {
-  return await Booking.create([
-    {
-      user_id: users[0],
-      field_id: fields[0]._id,
-      schedule: (DateTime.fromObject({year: 2025, month: 5, day: 22, hour: 17 }, { zone: 'Asia/Jakarta', numberingSystem: 'beng'})).toMillis(),
-      status: 'pending',
-      payment_type: PAYMENT.POA,
-      reminder_id: '10' // doesn't exist in bullmq's redis
-    },
-    {
-      user_id: users[1],
-      field_id: fields[1]._id,
-      schedule: (DateTime.fromObject({year: 2025, month: 5, day: 25, hour: 21 }, { zone: 'Asia/Jakarta', numberingSystem: 'beng'})).toMillis(),
-      status: 'pending',
-      payment_type: PAYMENT.POA,
-      reminder_id: '11' // doesn't exist in bullmq's redis
-    },
-    {
-      user_id: users[1],
-      field_id: fields[2]._id,
-      schedule: (DateTime.fromObject({year: 2025, month: 5, day: 17, hour: 9 }, { zone: 'Asia/Jakarta', numberingSystem: 'beng'})).toMillis(),
-      status: 'pending',
-      payment_type: PAYMENT.POA,
-      reminder_id: '11' // doesn't exist in bullmq's redis
-    },
-  ])
-}
-
-const createReviews = async (bookings) => {
-  return await Review.create([
-    {
-      field_id: bookings[0].field_id,
-      user_id: bookings[0].user_id,
-      booking_id: bookings[0]._id,
-      rating: 4,
-      description: 'Lapangnya bagus'
-    },
-    {
-      field_id: bookings[1].field_id,
-      user_id: bookings[1].user_id,
-      booking_id: bookings[1]._id,
-      rating: 2,
-      description: 'Ada bagian yang lecet'
-    },
-    {
-      field_id: bookings[2].field_id,
-      user_id: bookings[2].user_id,
-      booking_id: bookings[2]._id,
-      rating: 4,
-      description: 'Cukup oke'
-    }
-  ])
-}
-
-const createBookedSchedules = async (bookings) => {
-  const records = bookings.map(e => ({
-    id: e._id.toString(),
-    user_id: e.user_id.toString(),
-    field_id: e.field_id.toString(),
-    schedule: e.schedule,
-  }))
-  for(const record of records) {
-    await bookedScheduleRepository.save(record)
-  }
-}
-
 const createFieldCache = async (fields) => {
   const records = fields.map(e => ({
     id: e._id.toString(),
@@ -192,23 +123,13 @@ const createFieldCache = async (fields) => {
     floor_type: e.floor_type,
     facilities: e.facilities,
   }))
+
   for(const record of records) {
     await fieldRepository.save(record)
   }
-}
-
-const createReviewCache = async (reviews) => {
-  const records = reviews.map(e => ({
-    id: e._id.toString(),
-    user_id: e.user_id.toString(),
-    field_id: e.field_id.toString(),
-    rating: e.rating,
-    description: e.description,
-    created_at: (new Date(e.createdAt)).getTime(),
-  }))
-  for(const record of records) {
-    await reviewRepository.save(record)
-  }
+  // await fieldRepository.save(records[0])
+  // await fieldRepository.save(records[1])
+  // await fieldRepository.save(records[2])
 }
 
 const resetRedis = async () => {
@@ -277,10 +198,6 @@ const resetJobInRedis = () => {
     console.log('New entries is inserted');
     const fields = await createFields()
     console.log('New fields is inserted');
-    // const bookings = await createBookings(users, fields) // should be fixed first
-    // console.log('New bookings is inserted');
-    // const reviews = await createReviews(bookings)
-    // console.log('New reviews is inserted');
 
     // connect redis
     await connectRedis()
@@ -299,12 +216,8 @@ const resetJobInRedis = () => {
     console.log('Redis index is created (2)');
 
     // redis operation
-    // await createBookedSchedules(bookings) //should be fixed first
-    // console.log('Booked Schedules is inserted');
     await createFieldCache(fields)
     console.log('Field Cache is inserted');
-    // await createReviewCache(reviews)
-    // console.log('Review Cache is inserted');
 
     console.log('Seed success');
   } catch(err) {
