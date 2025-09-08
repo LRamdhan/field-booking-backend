@@ -10,7 +10,7 @@ import ValidationError from "./../exception/ValidationError.js"
 import fs from 'fs/promises'
 import { authorizationUrl } from "./../config/googleAuth.js"
 import getUserGoogleInfo from "./../utils/googleApi.js"
-import { ACCESS_TOKEN_EXPIRE_MINUTE, FRONTEND_OAUTH_URL, FRONTEND_RESET_PASSWORD_URL } from "./../config/env.js"
+import { ACCESS_TOKEN_EXPIRE_MINUTE, FRONTEND_BASE_URL, FRONTEND_OAUTH_URL, FRONTEND_RESET_PASSWORD_URL } from "./../config/env.js"
 import OauthError from "./../exception/OauthError.js"
 import { generateToken } from "../utils/jwtHelper.js"
 import tokenRepository from "../model/redis/tokenRepository.js"
@@ -27,6 +27,7 @@ import otpRepository from "../model/redis/otpRepository.js"
 import relativeTime from 'dayjs/plugin/relativeTime.js'
 import bcrypt from 'bcrypt'
 import { checkExistingOtp, checkNotFoundOtp, generateOtp, saveOtp } from "../utils/otp.js"
+import mustache from 'mustache'
 
 dayjs.locale('id');
 dayjs.extend(relativeTime)
@@ -115,7 +116,11 @@ const userController = {
       }
 
       // response
-      const html = (await fs.readFile('./src/view/confirm-success.html')).toString()
+      const attachedData = {
+        loginUrl: FRONTEND_BASE_URL
+      }
+      let html = (await fs.readFile('./src/view/confirm-success.html')).toString()
+      html = mustache.render(html, attachedData)
       return responseApi.html(res, html, 201)
     } catch(err) {
       next(err)
