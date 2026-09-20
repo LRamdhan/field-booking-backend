@@ -3,6 +3,7 @@ import bookingQueue from "../job/queue/bookingQueue.js";
 import utc from 'dayjs/plugin/utc.js' 
 import timezone from 'dayjs/plugin/timezone.js'
 import Field from "../model/mongodb/fieldModel.js";
+import PAYMENT from "../constant/payment.js";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -72,4 +73,32 @@ export const addReminderBookingJob = async (email, scheduleMilis, bookingInfo) =
 
 export const removeReminderBookingJob = async (jobId) => {
   await bookingQueue.remove(jobId)
+}
+
+
+export const addTurnPendingBookingJob = async (booking) => {
+  let delay
+
+  if(booking.payment_type === PAYMENT.POA) {
+    const certainTime = dayjs(booking.schedule); 
+    const now = dayjs();
+    const secondsPassed = now.diff(certainTime, 'second');
+    delay = (secondsPassed * 1000);
+    delay = delay < 0 ? (delay * -1) : delay
+  } else {
+    delay = ((60 * 60 * 24) * 1000)
+    delay = delay < 0 ? (delay * -1) : delay
+  }
+
+  const job = await bookingQueue.add('TURN_PENDING_BOOKING', { 
+    bookingId: booking._id.toString(),
+  }, {
+    delay,
+    removeOnComplete: true,
+    attempts: 3,
+    backoff: {
+      type: 'fixed',
+      delay: 1000,
+    },
+  });
 }

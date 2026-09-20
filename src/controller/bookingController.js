@@ -10,7 +10,7 @@ import bookingValidation from "../validation/bookingValidation.js"
 import validate from "../validation/validate.js"
 import { EntityId } from 'redis-om'
 import generateRandomString from "./../utils/generateRandomString.js"
-import { addFinishBookingJob, addReminderBookingJob, removeReminderBookingJob } from "../utils/jobUtils.js"
+import { addFinishBookingJob, addReminderBookingJob, addTurnPendingBookingJob, removeReminderBookingJob } from "../utils/jobUtils.js"
 
 const bookingController = {
   createBooking : async (req, res, next) => {
@@ -77,6 +77,9 @@ const bookingController = {
 
       // insert new booking to mongodb
       const booking = await Booking.create(bookingData)
+
+      // add turn pending booking job
+      await addTurnPendingBookingJob(booking)
 
        // insert new booking cache to redis
       await bookedScheduleRepository.save({
