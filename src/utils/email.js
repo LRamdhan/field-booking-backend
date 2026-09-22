@@ -7,10 +7,13 @@ const transporter = nodemailer.createTransport({
   service: EMAIL_SERVICE,
   host: EMAIL_HOST,
   port: 465,
-  secure: true,
+  secure: false,
   auth: {
     user: EMAIL_USER, 
     pass: EMAIL_PASS
+  },
+  tls: {
+    rejectUnauthorized: false
   },
 });
 
@@ -88,4 +91,4 @@ const sendResetPasswordLinkEmail = async (data) => {
   return result
 }
 
-export { sendConfirmEmail, sendReminderEmail, sendChangePasswordOTPEmail, sendResetPasswordLinkEmail}
+export { transporter, sendConfirmEmail, sendReminderEmail, sendChangePasswordOTPEmail, sendResetPasswordLinkEmail}

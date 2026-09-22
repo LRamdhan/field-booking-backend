@@ -5,6 +5,7 @@ import { sendReminderEmail } from '../../utils/email.js';
 import DeletedBooking from '../../model/mongodb/deletedBookingModel.js';
 import bookedScheduleRepository from '../../model/redis/bookedScheduleRepository.js';
 import { EntityId } from 'redis-om';
+import logger from '../../config/logConfig.js';
 
 const runBookingWorker = () => {
   const bookingWorker = new Worker('booking', async job => {
@@ -49,14 +50,17 @@ const runBookingWorker = () => {
 
   bookingWorker.on('completed', job => {
     console.log(`job with id ${job.id} has completed!`);
+    logger.info(`job with id ${job.id} has completed!`);
   });
   
   bookingWorker.on('failed', (job, err) => {
     console.log(`job with id ${job.id} has failed with ${err.message}`);
+    logger.info(`job with id ${job.id} has failed with ${err.message}`);
   });
 
   bookingWorker.on('error', err => {
     console.log(err.message);
+    logger.info(err.message);
   });
 }
 
