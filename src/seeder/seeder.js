@@ -207,8 +207,8 @@ const resetJobInRedis = () => {
     console.log('Redis index is created (1)');
 
     // delete all redis
-    await resetRedis()
-    resetJobInRedis()
+    resetJobInRedis() // 1
+    await resetRedis() // 2
     console.log('Redis is clear');
 
     // create redis index 2
